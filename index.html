@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Offering Insights</title>
+    <meta name="description" content="Offering Insights is a lightweight video trend research dashboard that uses YouTube Data API Services for public metadata lookup.">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Offering Insights home">
+        <span class="brand-mark">OI</span>
+        <span>Offering Insights</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="app.html">App demo</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="mailto:offeringinsights.contact@gmail.com">Contact</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Prototype for public video research</p>
+          <h1>Offering Insights</h1>
+          <p class="lede">
+            A lightweight dashboard for reviewing public video, channel, playlist, and category metadata while keeping API access narrow and auditable.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="app.html">View demo</a>
+            <a class="button secondary" href="privacy.html">Privacy policy</a>
+          </div>
+          <dl class="status-grid">
+            <div>
+              <dt>Launch stage</dt>
+              <dd>Private prototype</dd>
+            </div>
+            <div>
+              <dt>Quota request</dt>
+              <dd>Default 10,000 points</dd>
+            </div>
+            <div>
+              <dt>Google OAuth</dt>
+              <dd>Not used in the first version</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="hero-preview" aria-label="Offering Insights dashboard preview">
+          <div class="browser-bar">
+            <span></span>
+            <span></span>
+            <span></span>
+            <strong>app.offering-insights.local</strong>
+          </div>
+          <img src="assets/dashboard-preview.png" alt="Offering Insights dashboard showing category research, public metadata, and endpoint usage">
+        </div>
+      </section>
+
+      <section class="section-band compact">
+        <div class="section-heading">
+          <p class="eyebrow">What it does</p>
+          <h2>Structured review of public YouTube metadata</h2>
+          <p>
+            Offering Insights is built for category-level research and editorial planning. The prototype presents public metadata in a workspace that makes source, endpoint, and quota assumptions visible.
+          </p>
+        </div>
+        <div class="workflow-grid" aria-label="Product workflow">
+          <article>
+            <span class="step-number">01</span>
+            <h3>Pick a category</h3>
+            <p>Select a research category and review sample public videos and channels.</p>
+          </article>
+          <article>
+            <span class="step-number">02</span>
+            <h3>Inspect metadata</h3>
+            <p>Read title, channel, playlist, category, publication, and public statistics context.</p>
+          </article>
+          <article>
+            <span class="step-number">03</span>
+            <h3>Prepare notes</h3>
+            <p>Use the structured view to prepare editorial or market research notes.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section-band">
+        <div class="section-heading">
+          <p class="eyebrow">API usage</p>
+          <h2>Planned endpoints are read-only metadata methods</h2>
+          <p>
+            The first version is designed to read public metadata. It does not upload videos, edit channels, moderate comments, or access private account data.
+          </p>
+        </div>
+        <div class="endpoint-grid" aria-label="Planned YouTube Data API endpoints">
+          <article class="endpoint-card blue">
+            <h3>youtube.videos.list</h3>
+            <p>Retrieve public video metadata, statistics, category IDs, and publication details.</p>
+          </article>
+          <article class="endpoint-card green">
+            <h3>youtube.channels.list</h3>
+            <p>Review public channel metadata needed for source context and editorial comparison.</p>
+          </article>
+          <article class="endpoint-card gold">
+            <h3>youtube.playlistItems.list</h3>
+            <p>Read public playlist membership for curated sets and channel playlist research.</p>
+          </article>
+          <article class="endpoint-card coral">
+            <h3>youtube.videoCategories.list</h3>
+            <p>Map category IDs to readable category names for category-level analysis.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="evidence-section">
+        <div class="evidence-copy">
+          <p class="eyebrow">Compliance posture</p>
+          <h2>Designed for limited, auditable use</h2>
+          <p>
+            The prototype uses approved API methods, avoids scraping, and documents privacy and terms links for review.
+          </p>
+        </div>
+        <ul class="check-list">
+          <li>Uses YouTube Data API Services endpoints instead of scraping.</li>
+          <li>Requests restoration to default quota, not above-default quota.</li>
+          <li>Does not require users to sign in with Google in the initial version.</li>
+          <li>Provides a public privacy policy, terms page, and contact email.</li>
+        </ul>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Offering Insights</span>
+      <span>Contact: <a href="mailto:offeringinsights.contact@gmail.com">offeringinsights.contact@gmail.com</a></span>
+    </footer>
+  </body>
+</html>

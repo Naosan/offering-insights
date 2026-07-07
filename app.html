@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>App demo - Offering Insights</title>
+    <meta name="description" content="Interactive prototype dashboard for Offering Insights.">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Offering Insights home">
+        <span class="brand-mark">OI</span>
+        <span>Offering Insights</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="app.html" aria-current="page">App demo</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="mailto:offeringinsights.contact@gmail.com">Contact</a>
+      </nav>
+    </header>
+
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Dashboard navigation">
+        <div class="sidebar-title">Offering Insights</div>
+        <button class="nav-button active" type="button">Category scan</button>
+        <button class="nav-button" type="button">Channel context</button>
+        <button class="nav-button" type="button">Playlist review</button>
+        <button class="nav-button" type="button">Compliance notes</button>
+      </aside>
+
+      <section class="dashboard">
+        <div class="dashboard-top">
+          <div>
+            <p class="eyebrow">Prototype dashboard</p>
+            <h1>Category trend review</h1>
+            <p class="dashboard-subtitle">Sample interface for public metadata lookup. No live API request is made by this static demo.</p>
+          </div>
+          <div class="status-strip" aria-label="API status">
+            <span>API key mode</span>
+            <strong>No OAuth</strong>
+          </div>
+        </div>
+
+        <div class="toolbar" aria-label="Category filter">
+          <button class="segment active" type="button" data-category="education">Education</button>
+          <button class="segment" type="button" data-category="gaming">Gaming</button>
+          <button class="segment" type="button" data-category="technology">Technology</button>
+          <button class="segment" type="button" data-category="music">Music</button>
+        </div>
+
+        <div class="metrics-grid" aria-live="polite">
+          <article class="metric">
+            <span>Videos sampled</span>
+            <strong id="metric-videos">24</strong>
+          </article>
+          <article class="metric">
+            <span>Channels reviewed</span>
+            <strong id="metric-channels">12</strong>
+          </article>
+          <article class="metric">
+            <span>Quota estimate</span>
+            <strong id="metric-quota">68</strong>
+          </article>
+          <article class="metric">
+            <span>Primary endpoint</span>
+            <strong id="metric-endpoint">videos.list</strong>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Public video metadata</h2>
+              <span id="category-label">Education</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Topic cluster</th>
+                    <th>Sample title</th>
+                    <th>Signals</th>
+                  </tr>
+                </thead>
+                <tbody id="video-table"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="panel insight-panel">
+            <div class="panel-heading">
+              <h2>Research notes</h2>
+              <span>Sample</span>
+            </div>
+            <div class="note-stack">
+              <article>
+                <strong>Data boundary</strong>
+                <p>Public metadata only: video, channel, playlist, category, and public statistics fields.</p>
+              </article>
+              <article>
+                <strong>Storage plan</strong>
+                <p>No OAuth user data. Cached public API responses, if added, are limited to product functionality.</p>
+              </article>
+              <article>
+                <strong>Quota stance</strong>
+                <p>Default quota restoration request for general non-search, non-upload methods.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel endpoint-panel">
+            <div class="panel-heading">
+              <h2>Endpoint plan</h2>
+              <span>Default quota</span>
+            </div>
+            <ol class="endpoint-list">
+              <li><strong>videoCategories.list</strong><span>Resolve category metadata.</span></li>
+              <li><strong>videos.list</strong><span>Read public video details and statistics.</span></li>
+              <li><strong>channels.list</strong><span>Read public channel context.</span></li>
+              <li><strong>playlistItems.list</strong><span>Review public curated collections.</span></li>
+            </ol>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>Sample data only. No live API request is made by this static demo.</span>
+      <span><a href="privacy.html">Privacy</a></span>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
