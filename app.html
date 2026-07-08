@@ -25,44 +25,69 @@
     <main class="app-shell">
       <aside class="sidebar" aria-label="Dashboard navigation">
         <div class="sidebar-title">Offering Insights</div>
-        <button class="nav-button active" type="button">Category scan</button>
-        <button class="nav-button" type="button">Channel context</button>
-        <button class="nav-button" type="button">Playlist review</button>
-        <button class="nav-button" type="button">Compliance notes</button>
+        <button class="nav-button active" type="button">Live API review</button>
+        <button class="nav-button" type="button">Category observations</button>
+        <button class="nav-button" type="button">Endpoint audit</button>
+        <button class="nav-button" type="button">Report export</button>
       </aside>
 
       <section class="dashboard">
         <div class="dashboard-top">
           <div>
             <p class="eyebrow">Prototype dashboard</p>
-            <h1>Category trend review</h1>
-            <p class="dashboard-subtitle">Sample interface for public metadata lookup. No live API request is made by this static demo.</p>
+            <h1>Category-specific YouTube metadata review</h1>
+            <p class="dashboard-subtitle">
+              Demonstrates read-only YouTube Data API usage for public video, channel, playlist, and category metadata.
+            </p>
           </div>
           <div class="status-strip" aria-label="API status">
-            <span>API key mode</span>
+            <span>Access mode</span>
             <strong>No OAuth</strong>
           </div>
         </div>
 
-        <div class="toolbar" aria-label="Category filter">
-          <button class="segment active" type="button" data-category="education">Education</button>
-          <button class="segment" type="button" data-category="gaming">Gaming</button>
-          <button class="segment" type="button" data-category="technology">Technology</button>
-          <button class="segment" type="button" data-category="music">Music</button>
-        </div>
+        <section class="panel control-panel" aria-labelledby="live-api-title">
+          <div class="panel-heading">
+            <h2 id="live-api-title">Live API demonstration</h2>
+            <span>Browser-only API key</span>
+          </div>
+          <div class="control-body">
+            <div class="input-grid">
+              <label class="field">
+                <span>YouTube Data API key</span>
+                <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste API key for recording only">
+              </label>
+              <label class="field wide">
+                <span>Public video IDs or URLs</span>
+                <textarea id="video-ids" rows="3" spellcheck="false">dQw4w9WgXcQ, jNQXAC9IVRw, Ks-_Mh1QhMc, 9bZkp7q19f0</textarea>
+              </label>
+            </div>
+            <div class="action-row">
+              <button class="button primary action-button" id="run-live" type="button">Run live API review</button>
+              <button class="button secondary action-button" id="load-sample" type="button">Load sample data</button>
+              <button class="button quiet action-button" id="clear-key" type="button">Clear key</button>
+            </div>
+            <p class="privacy-note">
+              The key is used only in this browser session to call Google API endpoints directly. It is not stored by this static site and is not sent to an Offering Insights server.
+            </p>
+            <div class="api-state" id="api-state" role="status" aria-live="polite">
+              Ready. Enter an API key and run the live review for the screencast.
+            </div>
+          </div>
+        </section>
 
         <div class="metrics-grid" aria-live="polite">
           <article class="metric">
             <span>Videos sampled</span>
-            <strong id="metric-videos">24</strong>
+            <strong id="metric-videos">0</strong>
           </article>
           <article class="metric">
             <span>Channels reviewed</span>
-            <strong id="metric-channels">12</strong>
+            <strong id="metric-channels">0</strong>
           </article>
           <article class="metric">
             <span>Quota estimate</span>
-            <strong id="metric-quota">68</strong>
+            <strong id="metric-quota">0</strong>
           </article>
           <article class="metric">
             <span>Primary endpoint</span>
@@ -71,64 +96,87 @@
         </div>
 
         <div class="dashboard-grid">
-          <section class="panel">
+          <section class="panel wide-panel">
             <div class="panel-heading">
-              <h2>Public video metadata</h2>
-              <span id="category-label">Education</span>
+              <h2>Category observations</h2>
+              <span id="category-label">Awaiting run</span>
             </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Topic cluster</th>
-                    <th>Sample title</th>
-                    <th>Signals</th>
+                    <th>Category</th>
+                    <th>Sample public video</th>
+                    <th>Observation signals</th>
                   </tr>
                 </thead>
-                <tbody id="video-table"></tbody>
+                <tbody id="video-table">
+                  <tr>
+                    <td colspan="3">Run a live API review or load sample data to populate category observations.</td>
+                  </tr>
+                </tbody>
               </table>
             </div>
           </section>
 
           <section class="panel insight-panel">
             <div class="panel-heading">
-              <h2>Research notes</h2>
-              <span>Sample</span>
+              <h2>Channel context</h2>
+              <span>channels.list</span>
             </div>
-            <div class="note-stack">
+            <div class="list-stack" id="channel-list">
               <article>
-                <strong>Data boundary</strong>
-                <p>Public metadata only: video, channel, playlist, category, and public statistics fields.</p>
-              </article>
-              <article>
-                <strong>Storage plan</strong>
-                <p>No OAuth user data. Cached public API responses, if added, are limited to product functionality.</p>
-              </article>
-              <article>
-                <strong>Quota stance</strong>
-                <p>Default quota restoration request for general non-search, non-upload methods.</p>
+                <strong>No channel data yet</strong>
+                <p>Channel context is read after video metadata returns public channel IDs.</p>
               </article>
             </div>
           </section>
 
           <section class="panel endpoint-panel">
             <div class="panel-heading">
-              <h2>Endpoint plan</h2>
-              <span>Default quota</span>
+              <h2>Endpoint audit trail</h2>
+              <span>Read-only methods</span>
             </div>
-            <ol class="endpoint-list">
-              <li><strong>videoCategories.list</strong><span>Resolve category metadata.</span></li>
-              <li><strong>videos.list</strong><span>Read public video details and statistics.</span></li>
-              <li><strong>channels.list</strong><span>Read public channel context.</span></li>
-              <li><strong>playlistItems.list</strong><span>Review public curated collections.</span></li>
+            <ol class="endpoint-list endpoint-log" id="endpoint-log">
+              <li><strong>youtube.videoCategories.list</strong><span>Pending category lookup.</span></li>
+              <li><strong>youtube.videos.list</strong><span>Pending public video metadata lookup.</span></li>
+              <li><strong>youtube.channels.list</strong><span>Pending public channel context lookup.</span></li>
+              <li><strong>youtube.playlistItems.list</strong><span>Pending public playlist item lookup.</span></li>
             </ol>
+          </section>
+
+          <section class="panel insight-panel">
+            <div class="panel-heading">
+              <h2>Playlist review</h2>
+              <span>playlistItems.list</span>
+            </div>
+            <div class="list-stack" id="playlist-list">
+              <article>
+                <strong>No playlist data yet</strong>
+                <p>The live review derives the first video's public uploads playlist for a small playlistItems.list sample.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="panel wide-panel">
+            <div class="panel-heading">
+              <h2>Generated report</h2>
+              <span>For review notes</span>
+            </div>
+            <div class="report-panel">
+              <pre id="report-output">Run the review to generate a concise report from public YouTube metadata.</pre>
+              <div class="action-row">
+                <button class="button secondary action-button" id="copy-report" type="button">Copy report</button>
+                <span class="copy-status" id="copy-status"></span>
+              </div>
+            </div>
           </section>
         </div>
       </section>
     </main>
 
     <footer class="site-footer">
-      <span>Sample data only. No live API request is made by this static demo.</span>
+      <span>Offering Insights live API demo. Public metadata only.</span>
       <span><a href="privacy.html">Privacy</a></span>
     </footer>
 
