@@ -25,30 +25,55 @@
     <main class="app-shell">
       <aside class="sidebar" aria-label="Dashboard navigation">
         <div class="sidebar-title">Offering Insights</div>
-        <button class="nav-button active" type="button">Live API review</button>
+        <button class="nav-button active" type="button">Review brief</button>
+        <button class="nav-button" type="button">Live API run</button>
         <button class="nav-button" type="button">Category observations</button>
-        <button class="nav-button" type="button">Endpoint audit</button>
-        <button class="nav-button" type="button">Report export</button>
+        <button class="nav-button" type="button">Evidence log</button>
+        <button class="nav-button" type="button">Report output</button>
       </aside>
 
       <section class="dashboard">
         <div class="dashboard-top">
           <div>
-            <p class="eyebrow">Prototype dashboard</p>
-            <h1>Category-specific YouTube metadata review</h1>
+            <p class="eyebrow">Prototype review workflow</p>
+            <h1>AI learning video category review</h1>
             <p class="dashboard-subtitle">
-              Demonstrates read-only YouTube Data API usage for public video, channel, playlist, and category metadata.
+              Turns a curated set of public YouTube video IDs into category-specific observations and a short reporting note.
             </p>
           </div>
           <div class="status-strip" aria-label="API status">
-            <span>Access mode</span>
-            <strong>No OAuth</strong>
+            <span>Method boundary</span>
+            <strong>No OAuth or search.list</strong>
           </div>
         </div>
 
+        <section class="panel brief-panel" aria-labelledby="review-brief-title">
+          <div class="panel-heading">
+            <h2 id="review-brief-title">Review brief</h2>
+            <span>Category-specific reporting</span>
+          </div>
+          <div class="brief-grid">
+            <article>
+              <span>Review question</span>
+              <strong>How are public AI learning videos distributed across YouTube categories?</strong>
+              <p>Compare a small, operator-selected cohort of videos and identify category, channel, and engagement signals for editorial planning.</p>
+            </article>
+            <article>
+              <span>Input boundary</span>
+              <strong>Curated public video IDs, not keyword search.</strong>
+              <p>The operator supplies known public video IDs or URLs. The prototype does not call `youtube.search.list` and does not collect private user data.</p>
+            </article>
+            <article>
+              <span>Report output</span>
+              <strong>Reusable observation note for review work.</strong>
+              <p>The dashboard groups videos by category, adds public channel context, samples public playlist membership, and drafts a compact report.</p>
+            </article>
+          </div>
+        </section>
+
         <section class="panel control-panel" aria-labelledby="live-api-title">
           <div class="panel-heading">
-            <h2 id="live-api-title">Live API demonstration</h2>
+            <h2 id="live-api-title">Live API run</h2>
             <span>Browser-only API key</span>
           </div>
           <div class="control-body">
@@ -58,8 +83,8 @@
                 <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste API key for recording only">
               </label>
               <label class="field wide">
-                <span>Public video IDs or URLs</span>
-                <textarea id="video-ids" rows="3" spellcheck="false">dQw4w9WgXcQ, jNQXAC9IVRw, Ks-_Mh1QhMc, 9bZkp7q19f0</textarea>
+                <span>Curated public video IDs or URLs</span>
+                <textarea id="video-ids" rows="3" spellcheck="false">aircAruvnKk, IHZwWFHWa-w, hJP5GqnTrNo, R9OHn5ZF4Uo</textarea>
               </label>
             </div>
             <div class="action-row">
@@ -71,18 +96,18 @@
               The key is used only in this browser session to call Google API endpoints directly. It is not stored by this static site and is not sent to an Offering Insights server.
             </p>
             <div class="api-state" id="api-state" role="status" aria-live="polite">
-              Ready. Enter an API key and run the live review for the screencast.
+              Ready. Enter an API key and run the curated AI learning review for the screencast.
             </div>
           </div>
         </section>
 
         <div class="metrics-grid" aria-live="polite">
           <article class="metric">
-            <span>Videos sampled</span>
+            <span>Videos in cohort</span>
             <strong id="metric-videos">0</strong>
           </article>
           <article class="metric">
-            <span>Channels reviewed</span>
+            <span>Channels compared</span>
             <strong id="metric-channels">0</strong>
           </article>
           <article class="metric">
@@ -90,7 +115,7 @@
             <strong id="metric-quota">0</strong>
           </article>
           <article class="metric">
-            <span>Primary endpoint</span>
+            <span>Primary method</span>
             <strong id="metric-endpoint">videos.list</strong>
           </article>
         </div>
@@ -106,7 +131,7 @@
                 <thead>
                   <tr>
                     <th>Category</th>
-                    <th>Sample public video</th>
+                    <th>Representative public video</th>
                     <th>Observation signals</th>
                   </tr>
                 </thead>
@@ -127,7 +152,7 @@
             <div class="list-stack" id="channel-list">
               <article>
                 <strong>No channel data yet</strong>
-                <p>Channel context is read after video metadata returns public channel IDs.</p>
+                <p>Channel context is read after video metadata returns public channel IDs for the selected cohort.</p>
               </article>
             </div>
           </section>
@@ -153,7 +178,7 @@
             <div class="list-stack" id="playlist-list">
               <article>
                 <strong>No playlist data yet</strong>
-                <p>The live review derives the first video's public uploads playlist for a small playlistItems.list sample.</p>
+                <p>The live review derives the first channel's public uploads playlist for a small playlistItems.list sample.</p>
               </article>
             </div>
           </section>

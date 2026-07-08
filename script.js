@@ -11,78 +11,78 @@ const sampleReview = {
   source: "sample",
   videos: [
     {
-      title: "Sample explainer: language learning routine",
-      channelTitle: "Public Learning Channel",
+      title: "Sample explainer: neural network foundations",
+      channelTitle: "Public Math Learning Channel",
       categoryId: "27",
       categoryName: "Education",
       publishedAt: "2026-06-20T10:00:00Z",
-      viewCount: 24800,
-      likeCount: 1120
+      viewCount: 23600000,
+      likeCount: 620000
     },
     {
-      title: "Sample review: compact AI workflow",
-      channelTitle: "Prototype Tech Review",
+      title: "Sample talk: AI in education",
+      channelTitle: "Public Conference Channel",
       categoryId: "28",
       categoryName: "Science & Technology",
       publishedAt: "2026-06-22T08:30:00Z",
-      viewCount: 18750,
-      likeCount: 940
+      viewCount: 2200000,
+      likeCount: 58000
     },
     {
-      title: "Sample tutorial: organizing research playlists",
-      channelTitle: "Editorial Planning Lab",
-      categoryId: "22",
-      categoryName: "People & Blogs",
+      title: "Sample explainer: why AI models are difficult to explain",
+      channelTitle: "Public Explainer Channel",
+      categoryId: "27",
+      categoryName: "Education",
       publishedAt: "2026-06-25T13:45:00Z",
-      viewCount: 9200,
-      likeCount: 410
+      viewCount: 12300000,
+      likeCount: 410000
     }
   ],
   channels: [
     {
-      title: "Public Learning Channel",
-      description: "Public channel metadata sample for category reporting.",
-      subscriberCount: 128000,
-      videoCount: 360
+      title: "Public Math Learning Channel",
+      description: "Public channel metadata sample for AI education reporting.",
+      subscriberCount: 6700000,
+      videoCount: 180
     },
     {
-      title: "Prototype Tech Review",
-      description: "Public channel metadata sample for technology coverage.",
-      subscriberCount: 54000,
-      videoCount: 112
+      title: "Public Conference Channel",
+      description: "Public channel metadata sample for technology and education coverage.",
+      subscriberCount: 25000000,
+      videoCount: 5200
     }
   ],
   playlistItems: [
     {
-      title: "Sample playlist item: weekly category review",
+      title: "Sample playlist item: AI learning follow-up",
       videoId: "sample-video-a",
-      channelTitle: "Public Learning Channel"
+      channelTitle: "Public Math Learning Channel"
     },
     {
-      title: "Sample playlist item: follow-up metadata check",
+      title: "Sample playlist item: related public explainer",
       videoId: "sample-video-b",
-      channelTitle: "Public Learning Channel"
+      channelTitle: "Public Math Learning Channel"
     }
   ],
   endpointLog: [
     {
       name: "youtube.videoCategories.list",
-      detail: "Sample category labels used for report grouping.",
+      detail: "Sample category labels used to separate Education from Science & Technology.",
       cost: 1
     },
     {
       name: "youtube.videos.list",
-      detail: "Sample public video metadata and statistics.",
+      detail: "Sample public metadata for the curated AI learning cohort.",
       cost: 1
     },
     {
       name: "youtube.channels.list",
-      detail: "Sample public channel context.",
+      detail: "Sample public channel context for cohort comparison.",
       cost: 1
     },
     {
       name: "youtube.playlistItems.list",
-      detail: "Sample public playlist membership.",
+      detail: "Sample public playlist membership for adjacent upload context.",
       cost: 1
     }
   ]
@@ -292,7 +292,7 @@ async function runLiveReview() {
       playlistItems,
       endpointLog
     });
-    setStatus("Live API review completed. The dashboard now shows category observations and endpoint usage.", "success");
+    setStatus("Live API review completed. The dashboard now shows the curated cohort, category observations, and endpoint evidence.", "success");
   } catch (error) {
     setStatus(error.message, "error");
   } finally {
@@ -404,8 +404,10 @@ function buildReport(review, categorySummaries, quotaEstimate) {
 
   return [
     "Offering Insights category-specific observation report",
+    "Review question: How are public AI learning videos distributed across YouTube categories, and which public channel signals help explain that distribution?",
     `Mode: ${mode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
+    "Input method: operator-curated public video IDs or URLs; no youtube.search.list keyword lookup.",
     `Videos sampled: ${review.videos.length}`,
     `Channels reviewed: ${review.channels.length}`,
     `Estimated quota units for this review: ${quotaEstimate}`,
@@ -417,7 +419,7 @@ function buildReport(review, categorySummaries, quotaEstimate) {
     ...categoryLines,
     "",
     "Reporting use case:",
-    "The dashboard groups public videos by YouTube category, adds public channel context, reviews public playlist membership, and produces a concise research report for editorial or market research planning."
+    "The dashboard supports editorial and market research planning by comparing a deliberately selected cohort, grouping returned videos by YouTube category, adding public channel context, reviewing adjacent public playlist membership, and producing a concise observation report."
   ].join("\n");
 }
 
@@ -433,7 +435,7 @@ async function copyReport() {
 elements.runLive?.addEventListener("click", runLiveReview);
 elements.loadSample?.addEventListener("click", () => {
   renderReview(sampleReview);
-  setStatus("Sample data loaded. Use live API review for the screencast evidence.", "warning");
+  setStatus("Sample AI learning cohort loaded. Use the live API run for screencast evidence.", "warning");
 });
 elements.clearKey?.addEventListener("click", () => {
   elements.apiKey.value = "";
