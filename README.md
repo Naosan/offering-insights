@@ -1,11 +1,11 @@
 # Offering Insights
 
-This is a static prototype for Offering Insights, a category-backed research workspace that turns selected public YouTube videos into category briefs, source evidence, and a Three.js brainstorm map.
+This is a static prototype for Offering Insights, a public video source review workspace that turns selected public YouTube videos into source-backed planning briefs, evidence tables, category summaries, and a Three.js evidence map.
 
 Pages:
 
 - `index.html` - public overview and product summary
-- `app.html` - live browser-only category brief builder
+- `app.html` - live browser-only planning brief builder
 - `privacy.html` - privacy policy
 - `terms.html` - terms of service
 
@@ -19,16 +19,16 @@ The site intentionally does not publish the applicant's home address.
 
 ## Live analysis recording workflow
 
-Use `app.html` to show the service workflow from selected videos to exported planning brief.
+Use `app.html` to show the service workflow from selected videos to an exported planning brief.
 
 Recommended recording flow:
 
 1. Open `https://naosan.github.io/offering-insights/app.html`.
 2. Set the brief name, use case, category region, and decision question.
 3. Paste the YouTube Data API key into the browser-only API key field.
-4. Keep the selected public video IDs or paste other public video URLs selected outside the API.
+4. Keep the selected public video IDs or paste other public video / playlist URLs selected outside the API.
 5. Click `Analyze selected videos`.
-6. Show the research brief, quoted YouTube source cards, Three.js brainstorm map, source evidence table, category observations, channel context, adjacent uploads, transparency trail, generated report, and download action.
+6. Show the planning brief, quoted YouTube source cards, Three.js evidence map, source evidence table, category summary, channel context, optional public playlist context, API trace, generated report, and download action.
 7. State that the workflow uses selected public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 ## GitHub Pages publishing notes

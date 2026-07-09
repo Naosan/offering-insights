@@ -47,7 +47,7 @@ const sampleReview = {
   channels: [
     {
       title: "Public Math Explainer Channel",
-      description: "Public channel metadata sample for category-backed planning.",
+      description: "Public channel metadata sample for source-backed planning.",
       subscriberCount: 6700000,
       videoCount: 180
     },
@@ -60,7 +60,7 @@ const sampleReview = {
   ],
   playlistItems: [
     {
-      title: "Sample playlist item: category angle follow-up",
+      title: "Sample playlist item: source angle follow-up",
       videoId: "sample-video-a",
       channelTitle: "Public Math Explainer Channel"
     },
@@ -104,6 +104,7 @@ const elements = {
   runLive: document.getElementById("run-live"),
   loadSample: document.getElementById("load-sample"),
   clearKey: document.getElementById("clear-key"),
+  termsConsent: document.getElementById("terms-consent"),
   apiState: document.getElementById("api-state"),
   metricVideos: document.getElementById("metric-videos"),
   metricChannels: document.getElementById("metric-channels"),
@@ -132,10 +133,10 @@ const elements = {
 
 function getBriefConfig() {
   return {
-    title: elements.briefTitle?.value.trim() || "Selected public video category brief",
-    audience: elements.briefAudience?.value || "category research",
+    title: elements.briefTitle?.value.trim() || "Selected public video source brief",
+    audience: elements.briefAudience?.value || "source review",
     regionCode: elements.regionCode?.value || "JP",
-    question: elements.decisionQuestion?.value.trim() || "Which category angle and evidence should this video set support?"
+    question: elements.decisionQuestion?.value.trim() || "Which source angle should this selected video set support?"
   };
 }
 
@@ -167,6 +168,20 @@ function escapeHtml(value) {
 function extractVideoIds(raw) {
   const matches = String(raw || "").match(/[A-Za-z0-9_-]{11}/g) || [];
   return [...new Set(matches)].slice(0, 20);
+}
+
+function extractPlaylistIds(raw) {
+  const text = String(raw || "");
+  const ids = [];
+  const listParamPattern = /[?&]list=([A-Za-z0-9_-]+)/g;
+  let match = listParamPattern.exec(text);
+  while (match) {
+    ids.push(match[1]);
+    match = listParamPattern.exec(text);
+  }
+  const directPattern = /\b(?:PL|UU|LL|RD|OLAK5uy_)[A-Za-z0-9_-]{10,}\b/g;
+  const directMatches = text.match(directPattern) || [];
+  return [...new Set([...ids, ...directMatches])].slice(0, 3);
 }
 
 function buildApiUrl(path, params) {
@@ -203,10 +218,6 @@ async function requestYouTube(endpointName, path, params, endpointLog) {
   });
 
   return response.json();
-}
-
-function uploadsPlaylistForChannel(channelId) {
-  return channelId && channelId.startsWith("UC") ? `UU${channelId.slice(2)}` : "";
 }
 
 function normalizeVideo(item, categoryMap) {
@@ -248,26 +259,45 @@ function normalizePlaylistItem(item) {
 
 async function runLiveReview() {
   const apiKey = elements.apiKey.value.trim();
-  const videoIds = extractVideoIds(elements.videoIds.value);
+  let videoIds = extractVideoIds(elements.videoIds.value);
+  const playlistIds = extractPlaylistIds(elements.videoIds.value);
   const config = getBriefConfig();
   setActiveNavByTarget("live-api-title");
+
+  if (elements.termsConsent && !elements.termsConsent.checked) {
+    setStatus("Review and accept the Privacy Policy and Terms before running a live YouTube API analysis.", "warning");
+    return;
+  }
 
   if (!apiKey) {
     setStatus("Enter a YouTube Data API key before running the live analysis, or use the sample brief.", "warning");
     return;
   }
 
-  if (!videoIds.length) {
-    setStatus("Enter at least one public YouTube video ID or URL.", "warning");
+  if (!videoIds.length && !playlistIds.length) {
+    setStatus("Enter at least one public YouTube video URL, video ID, or public playlist URL.", "warning");
     return;
   }
 
   elements.runLive.disabled = true;
-  setStatus("Reading public YouTube metadata for the selected videos...", "neutral");
+  setStatus("Reading public YouTube metadata for the selected source set...", "neutral");
 
   const endpointLog = [];
+  let playlistItems = [];
 
   try {
+    if (playlistIds.length) {
+      const playlistPayloads = await Promise.all(playlistIds.map(playlistId => requestYouTube(
+        "youtube.playlistItems.list",
+        "playlistItems",
+        { part: "snippet,contentDetails", playlistId, maxResults: "20", key: apiKey },
+        endpointLog
+      )));
+      playlistItems = playlistPayloads.flatMap(payload => (payload.items || []).map(normalizePlaylistItem));
+      const playlistVideoIds = playlistItems.map(item => item.videoId).filter(Boolean);
+      videoIds = [...new Set([...videoIds, ...playlistVideoIds])].slice(0, 20);
+    }
+
     const categoriesPayload = await requestYouTube(
       "youtube.videoCategories.list",
       "videoCategories",
@@ -299,38 +329,20 @@ async function runLiveReview() {
     );
     const channels = (channelsPayload.items || []).map(normalizeChannel);
 
-    let playlistItems = [];
-    const firstUploadsPlaylist = uploadsPlaylistForChannel(channelIds[0]);
-    if (firstUploadsPlaylist) {
-      try {
-        const playlistPayload = await requestYouTube(
-          "youtube.playlistItems.list",
-          "playlistItems",
-          { part: "snippet,contentDetails", playlistId: firstUploadsPlaylist, maxResults: "5", key: apiKey },
-          endpointLog
-        );
-        playlistItems = (playlistPayload.items || []).map(normalizePlaylistItem);
-      } catch (error) {
-        endpointLog.push({
-          name: "youtube.playlistItems.list",
-          detail: `Attempted derived uploads playlist ${firstUploadsPlaylist}; ${error.message}`,
-          cost: endpointCosts["youtube.playlistItems.list"]
-        });
-      }
-    }
-
     renderReview({
       source: "live",
       config,
       videos,
       channels,
       playlistItems,
-      endpointLog
+      endpointLog,
+      fetchedAt: new Date().toISOString()
     });
-    setStatus("Live analysis completed. The workspace now shows the selected cohort, category observations, source evidence, and transparency trail.", "success");
+    setStatus(`Live YouTube API run completed at ${formatTimestamp(new Date())}. The API key field was cleared after the request.`, "success");
   } catch (error) {
     setStatus(error.message, "error");
   } finally {
+    elements.apiKey.value = "";
     elements.runLive.disabled = false;
   }
 }
@@ -374,10 +386,10 @@ function renderReview(review) {
 
   elements.metricVideos.textContent = formatNumber(review.videos.length);
   elements.metricChannels.textContent = formatNumber(review.channels.length);
-  elements.metricQuota.textContent = formatNumber(quotaEstimate);
-  elements.metricEndpoint.textContent = "videos.list";
+  elements.metricQuota.textContent = formatNumber(categorySummaries.length);
+  elements.metricEndpoint.textContent = review.source === "live" ? "Live ready" : "Sample ready";
   elements.categoryLabel.textContent = review.source === "live" ? "Live video set" : "Sample video set";
-  elements.briefMode.textContent = review.source === "live" ? "Live planning brief" : "Sample planning brief";
+  elements.briefMode.textContent = review.source === "live" ? "Live API metadata" : "Sample fallback mode";
   renderBriefResult(review, categorySummaries, quotaEstimate, config);
   renderVideoSources(review, categorySummaries);
   updateMindmap(review, categorySummaries, config);
@@ -408,9 +420,9 @@ function renderReview(review) {
         <div class="muted-line">${escapeHtml(summary.topVideo.channelTitle)} - ${formatDate(summary.topVideo.publishedAt)}</div>
       </td>
       <td>
-        <span class="signal">${formatNumber(summary.averageViews)} avg views</span>
+        <span class="signal">${formatNumber(summary.count)} selected source${summary.count === 1 ? "" : "s"}</span>
         <span class="signal">${formatNumber(summary.channelCount)} channel${summary.channelCount === 1 ? "" : "s"}</span>
-        <span class="signal">category metadata mapped</span>
+        <span class="signal">category label mapped</span>
       </td>
     </tr>
   `).join("");
@@ -434,8 +446,8 @@ function renderReview(review) {
     </article>
   `).join("") : `
     <article>
-      <strong>No playlist items displayed</strong>
-      <p>The derived public uploads playlist did not return displayable items for this sample.</p>
+      <strong>No public playlist URL included</strong>
+      <p>Playlist items are displayed only when the selected source set includes a public playlist URL.</p>
     </article>
   `;
 
@@ -461,7 +473,7 @@ function renderVideoSources(review, categorySummaries) {
   if (!videos.length || !featured?.id) {
     elements.featuredVideo.innerHTML = `
       <strong>Analyze videos to load a featured YouTube source.</strong>
-      <p>Offering Insights shows public videos as cited sources for the generated research brief.</p>
+      <p>Offering Insights shows public videos as cited sources for the generated planning brief.</p>
     `;
     elements.videoGallery.innerHTML = `
       <article>
@@ -626,7 +638,7 @@ function buildMindmapScene(review, categorySummaries, config) {
     );
     const categoryNode = addMindmapNode({
       label: summary.categoryName,
-      detail: `${summary.count} videos, average views ${formatNumber(summary.averageViews)}`,
+      detail: `${summary.count} selected source${summary.count === 1 ? "" : "s"} in this category`,
       type: "category",
       position: categoryPosition,
       color: palette.category,
@@ -777,7 +789,7 @@ function handleMindmapPointer(event) {
 function renderBrainstormDetail(data) {
   if (!data || !elements.mindmapDetailTitle) return;
 
-  elements.mindmapDetailTitle.textContent = data.label || "Category brief";
+  elements.mindmapDetailTitle.textContent = data.label || "Source brief";
   elements.mindmapDetailBody.textContent = data.detail || "Use the selected node as a prompt for the brief.";
   const prompts = brainstormPromptsFor(data);
   elements.brainstormList.innerHTML = prompts.map(prompt => `<li>${escapeHtml(prompt)}</li>`).join("");
@@ -786,16 +798,16 @@ function renderBrainstormDetail(data) {
 function brainstormPromptsFor(data) {
   if (data.type === "category" && data.summary) {
     return [
-      `Lead with ${data.summary.categoryName} if the brief needs a single category lens.`,
-      `Compare ${formatNumber(data.summary.count)} selected video${data.summary.count === 1 ? "" : "s"} against outlier categories.`,
-      `Use average public views ${formatNumber(data.summary.averageViews)} as context, not as a private-user signal.`
+      `Use ${data.summary.categoryName} as a candidate category lens for this selected source set.`,
+      `Compare ${formatNumber(data.summary.count)} selected source${data.summary.count === 1 ? "" : "s"} with the other returned categories.`,
+      "Keep the category summary limited to this selected source set, not a YouTube-wide trend."
     ];
   }
 
   if (data.type === "video" && data.video) {
     return [
       `Use "${data.video.title}" as a cited public source in the evidence section.`,
-      `Check whether its category ${data.video.categoryName} matches the intended brief angle.`,
+      `Check whether its category ${data.video.categoryName} supports the intended source angle.`,
       `Open the YouTube source when the planner needs to inspect the original public video.`
     ];
   }
@@ -810,8 +822,8 @@ function brainstormPromptsFor(data) {
 
   return [
     "Define the decision question before running the video analysis.",
-    "Use category concentration to pick a lead angle.",
-    "Use the transparency trail to explain how the brief was built."
+    "Use category concentration as one signal for a candidate angle.",
+    "Use the API trace to explain how the brief was built."
   ];
 }
 
@@ -843,19 +855,19 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
   if (!primary) {
     elements.briefResult.innerHTML = `
       <article>
-        <span>Primary category</span>
+        <span>Most represented category</span>
         <strong>Waiting for video analysis</strong>
-        <p>Analyze the selected videos to create an evidence-backed research brief.</p>
+        <p>Analyze the selected videos to create a source-backed planning brief.</p>
       </article>
       <article>
         <span>Service output</span>
-        <strong>Research brief with source evidence</strong>
+        <strong>Planning brief with source evidence</strong>
         <p>The brief is generated from public YouTube metadata and cited source cards.</p>
       </article>
       <article>
         <span>Next action</span>
         <strong>Export planning note</strong>
-        <p>Copy the generated report for editorial planning, market notes, or category research.</p>
+        <p>Copy the generated report for editorial planning, source review, or research notes.</p>
       </article>
     `;
     return;
@@ -866,14 +878,14 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
     .slice()
     .sort((a, b) => b.subscriberCount - a.subscriberCount)[0];
   const playlistNote = review.playlistItems.length
-    ? `${review.playlistItems.length} public playlist item${review.playlistItems.length === 1 ? "" : "s"} sampled from the first channel.`
-    : "No public playlist items were returned for the sampled channel.";
+    ? `${review.playlistItems.length} public playlist item${review.playlistItems.length === 1 ? "" : "s"} included from user-provided playlist input.`
+    : "No public playlist URL was included in this source set.";
 
   elements.briefResult.innerHTML = `
     <article>
-      <span>Answer</span>
-      <strong>${escapeHtml(primary.categoryName)} leads this source set.</strong>
-      <p>For ${escapeHtml(config.audience)}, emphasize this category first: ${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos fall here, representing ${formatNumber(concentration)}% of the current cohort.</p>
+      <span>Candidate angle</span>
+      <strong>${escapeHtml(primary.categoryName)} is most represented in this selected set.</strong>
+      <p>For ${escapeHtml(config.audience)}, use this as one source-set signal: ${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos fall here, representing ${formatNumber(concentration)}% of the current set.</p>
     </article>
     <article>
       <span>Evidence</span>
@@ -882,8 +894,8 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
     </article>
     <article>
       <span>Next action</span>
-      <strong>Brief generated with ${formatNumber(quotaEstimate)} estimated quota units.</strong>
-      <p>Export the brief for the question: ${escapeHtml(config.question)} It cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"} in the transparency trail.</p>
+      <strong>Brief ready for export.</strong>
+      <p>Export the brief for the question: ${escapeHtml(config.question)} It cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"} in the API trace.</p>
     </article>
   `;
 }
@@ -891,7 +903,7 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
 function buildReport(review, categorySummaries, quotaEstimate, config) {
   const mode = review.source === "live" ? "Live YouTube Data API analysis" : "Sample data demonstration";
   const categoryLines = categorySummaries.map(summary => (
-    `- ${summary.categoryName}: ${summary.count} sampled video(s), ${summary.channelCount} channel(s), average public views ${formatNumber(summary.averageViews)}. Top sample: "${summary.topVideo.title}".`
+    `- ${summary.categoryName}: ${summary.count} selected source video(s), ${summary.channelCount} channel(s). Representative source: "${summary.topVideo.title}".`
   ));
   const endpointLines = review.endpointLog.map(item => (
     `- ${item.name}: ${item.detail || "read-only public metadata lookup"}`
@@ -899,13 +911,15 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
 
   return [
     config.title,
-    "Service outcome: Build a category-backed research brief from selected public YouTube videos.",
+    "Service outcome: Build a source-backed planning brief from selected public YouTube videos.",
     `Use case: ${config.audience}`,
     `Decision question: ${config.question}`,
     `Mode: ${mode}`,
+    review.fetchedAt ? `Fetched at: ${formatTimestamp(new Date(review.fetchedAt))}` : "",
     `Category region: ${config.regionCode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
-    "Input method: selected public video IDs or URLs; no keyword discovery is required for this workflow.",
+    "Prototype boundary: this tool does not watch videos, transcribe audio, analyze captions, analyze comments, or access private account data.",
+    "Input method: selected public video IDs, video URLs, or public playlist URLs; no keyword discovery is required for this workflow.",
     `Videos sampled: ${review.videos.length}`,
     `Channels compared: ${review.channels.length}`,
     `Estimated quota units for this analysis: ${quotaEstimate}`,
@@ -913,7 +927,7 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     "Endpoints demonstrated:",
     ...endpointLines,
     "",
-    "Category observations:",
+    "Category summary for this selected source set:",
     ...categoryLines,
     "",
     "Source evidence:",
@@ -922,11 +936,23 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     )),
     "",
     "Visual workspace:",
-    "The page renders quoted YouTube source cards from public video thumbnails and links, then builds a Three.js brainstorm map from the same public metadata so a planner can explore categories, source videos, and channel context before exporting the brief.",
+    "The page renders YouTube source cards from public thumbnails and links, then builds an optional Three.js evidence map from the same public metadata so a planner can inspect categories, source videos, and channel context before exporting the brief.",
     "",
     "Planning use case:",
-    "The dashboard supports category-backed research by turning a selected public source list into a category brief, evidence table, transparency trail, and exportable observation report."
-  ].join("\n");
+    "The dashboard supports source review by turning a selected public source list into a planning brief, evidence table, API trace, and exportable note."
+  ].filter(line => line !== "").join("\n");
+}
+
+function formatTimestamp(date) {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "unknown time";
+  return date.toLocaleString("en-US", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short"
+  });
 }
 
 function scrollToDashboardSection(targetId, button) {
@@ -1002,7 +1028,7 @@ elements.runLive?.addEventListener("click", runLiveReview);
 elements.loadSample?.addEventListener("click", () => {
   setActiveNavByTarget("live-api-title");
   renderReview({ ...sampleReview, config: getBriefConfig() });
-  setStatus("Sample public video cohort loaded. Use live analysis when you want current YouTube metadata.", "warning");
+  setStatus("Sample fallback mode loaded. Use live analysis with selected public sources when recording the review workflow.", "warning");
 });
 elements.clearKey?.addEventListener("click", () => {
   elements.apiKey.value = "";
