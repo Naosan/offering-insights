@@ -1,11 +1,11 @@
-# Offering Insights temporary site
+# Offering Insights
 
-This is a temporary static website for the Offering Insights YouTube Data API Services audit and default quota restoration request.
+This is a static prototype for Offering Insights, a learning-content research workspace that turns selected public YouTube videos into category briefs, source evidence, and a Three.js brainstorm map.
 
 Pages:
 
-- `index.html` - public overview and API usage summary
-- `app.html` - live browser-only category brief builder for review screenshots and screencasts
+- `index.html` - public overview and product summary
+- `app.html` - live browser-only category brief builder
 - `privacy.html` - privacy policy
 - `terms.html` - terms of service
 
@@ -17,9 +17,9 @@ Suggested form URLs after publishing:
 
 The site intentionally does not publish the applicant's home address.
 
-## Review screencast workflow
+## Live analysis recording workflow
 
-Use `app.html` for the follow-up screencast requested by the YouTube API Services review team.
+Use `app.html` to show the service workflow from selected videos to exported planning brief.
 
 Recommended recording flow:
 
@@ -27,9 +27,9 @@ Recommended recording flow:
 2. Set the brief name, use case, category region, and decision question.
 3. Paste the YouTube Data API key into the browser-only API key field.
 4. Keep the selected public video IDs or paste other public video URLs selected outside the API.
-5. Click `Run live API review`.
-6. Show the decision brief, quoted YouTube source cards, Three.js brainstorm map, source evidence table, category observations, channel context, playlist review, endpoint audit trail, generated report, and download action.
-7. State that the demo uses public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
+5. Click `Analyze selected videos`.
+6. Show the learning brief, quoted YouTube source cards, Three.js brainstorm map, source evidence table, category observations, channel context, adjacent uploads, transparency trail, generated report, and download action.
+7. State that the workflow uses selected public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 ## GitHub Pages publishing notes
 
