@@ -58,18 +58,7 @@ const sampleReview = {
       videoCount: 5200
     }
   ],
-  playlistItems: [
-    {
-      title: "Sample playlist item: source angle follow-up",
-      videoId: "sample-video-a",
-      channelTitle: "Public Math Explainer Channel"
-    },
-    {
-      title: "Sample playlist item: related public explainer",
-      videoId: "sample-video-b",
-      channelTitle: "Public Math Explainer Channel"
-    }
-  ],
+  playlistItems: [],
   endpointLog: [
     {
       name: "youtube.videoCategories.list",
@@ -84,11 +73,6 @@ const sampleReview = {
     {
       name: "youtube.channels.list",
       detail: "Sample public channel context for cohort comparison.",
-      cost: 1
-    },
-    {
-      name: "youtube.playlistItems.list",
-      detail: "Sample public playlist membership for adjacent upload context.",
       cost: 1
     }
   ]
