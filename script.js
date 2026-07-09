@@ -250,6 +250,7 @@ async function runLiveReview() {
   const apiKey = elements.apiKey.value.trim();
   const videoIds = extractVideoIds(elements.videoIds.value);
   const config = getBriefConfig();
+  setActiveNavByTarget("live-api-title");
 
   if (!apiKey) {
     setStatus("Enter a YouTube Data API key before running the live analysis, or use the sample brief.", "warning");
@@ -932,9 +933,14 @@ function scrollToDashboardSection(targetId, button) {
   const target = document.getElementById(targetId);
   if (!target) return;
   target.scrollIntoView({ behavior: "smooth", block: "start" });
-  elements.navButtons.forEach(navButton => navButton.classList.remove("active"));
-  button?.classList.add("active");
+  setActiveNavByTarget(targetId, button);
   window.setTimeout(updateActiveNav, 500);
+}
+
+function setActiveNavByTarget(targetId, fallbackButton) {
+  elements.navButtons.forEach(navButton => navButton.classList.remove("active"));
+  const matchingButton = fallbackButton || Array.from(elements.navButtons).find(navButton => navButton.dataset.target === targetId);
+  matchingButton?.classList.add("active");
 }
 
 function updateActiveNav() {
@@ -994,8 +1000,9 @@ function downloadReport() {
 
 elements.runLive?.addEventListener("click", runLiveReview);
 elements.loadSample?.addEventListener("click", () => {
+  setActiveNavByTarget("live-api-title");
   renderReview({ ...sampleReview, config: getBriefConfig() });
-  setStatus("Sample public video cohort loaded. Use the live API run for screencast evidence.", "warning");
+  setStatus("Sample public video cohort loaded. Use live analysis when you want current YouTube metadata.", "warning");
 });
 elements.clearKey?.addEventListener("click", () => {
   elements.apiKey.value = "";
