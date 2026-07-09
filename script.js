@@ -878,8 +878,8 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
     </article>
     <article>
       <span>Next action</span>
-      <strong>Brief ready for export.</strong>
-      <p>Export the brief for the question: ${escapeHtml(config.question)} It cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"} in the API trace.</p>
+      <strong>Copy or download the planning note.</strong>
+      <p>Use the brief for the question: ${escapeHtml(config.question)} It cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"} in the API trace.</p>
     </article>
   `;
 }
@@ -904,8 +904,8 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
     "Prototype boundary: this tool does not watch videos, transcribe audio, analyze captions, analyze comments, or access private account data.",
     "Input method: selected public video IDs, video URLs, or public playlist URLs; no keyword discovery is required for this workflow.",
-    `Videos sampled: ${review.videos.length}`,
-    `Channels compared: ${review.channels.length}`,
+    `Videos reviewed: ${review.videos.length}`,
+    `Channels included: ${review.channels.length}`,
     `Estimated quota units for this analysis: ${quotaEstimate}`,
     "",
     "Endpoints demonstrated:",
@@ -921,6 +921,12 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     "",
     "Visual workspace:",
     "The page renders YouTube source cards from public thumbnails and links, then builds an optional Three.js evidence map from the same public metadata so a planner can inspect categories, source videos, and channel context before exporting the brief.",
+    "",
+    "What this enables:",
+    "- Choose a candidate source angle for the selected video set.",
+    "- Cite the original public YouTube source links and metadata.",
+    "- Copy or download the planning brief for a handoff.",
+    "- Explain how the brief was built using the read-only API trace.",
     "",
     "Planning use case:",
     "The dashboard supports source review by turning a selected public source list into a planning brief, evidence table, API trace, and exportable note."

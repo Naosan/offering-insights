@@ -6,7 +6,7 @@
     <title>Workspace - Offering Insights</title>
     <meta name="description" content="Offering Insights turns selected public YouTube videos into source-backed planning briefs and evidence maps.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260709-source-brief">
+    <link rel="stylesheet" href="styles.css?v=20260710-outcome-brief">
   </head>
   <body>
     <header class="site-header">
@@ -28,6 +28,7 @@
         <button class="nav-button active" type="button" data-target="workflow-title">Workflow</button>
         <button class="nav-button" type="button" data-target="live-api-title">Analyze videos</button>
         <button class="nav-button" type="button" data-target="decision-brief-title">Brief result</button>
+        <button class="nav-button" type="button" data-target="outcome-title">Use result</button>
         <button class="nav-button" type="button" data-target="video-sources-title">Video evidence</button>
         <button class="nav-button" type="button" data-target="mindmap-title">Evidence map</button>
         <button class="nav-button" type="button" data-target="category-observations-title">Category summary</button>
@@ -188,6 +189,35 @@
             </div>
           </section>
 
+          <section class="panel wide-panel outcome-panel" aria-labelledby="outcome-title">
+            <div class="panel-heading">
+              <h2 id="outcome-title">What this enables</h2>
+              <span>After analysis</span>
+            </div>
+            <div class="outcome-grid">
+              <article>
+                <span>Plan</span>
+                <strong>Choose a candidate source angle.</strong>
+                <p>Use the category summary, channel context, and source cards to decide what the selected video set can support.</p>
+              </article>
+              <article>
+                <span>Cite</span>
+                <strong>Keep the original YouTube sources visible.</strong>
+                <p>Open each public source on YouTube and keep the brief grounded in titles, channels, thumbnails, and public metadata.</p>
+              </article>
+              <article>
+                <span>Export</span>
+                <strong>Turn the analysis into a reusable note.</strong>
+                <p>Copy or download the generated planning brief for editorial planning, source review, or a research handoff.</p>
+              </article>
+              <article>
+                <span>Explain</span>
+                <strong>Show exactly how the brief was built.</strong>
+                <p>Use the API trace to show the read-only YouTube Data API methods and the public-data boundary.</p>
+              </article>
+            </div>
+          </section>
+
           <section class="panel wide-panel source-video-panel">
             <div class="panel-heading">
               <h2 id="video-sources-title">Quoted video sources</h2>
@@ -343,6 +373,6 @@
       <span><a href="privacy.html">Privacy</a></span>
     </footer>
 
-    <script src="script.js?v=20260709-source-brief-sample-boundary"></script>
+    <script src="script.js?v=20260710-outcome-brief"></script>
   </body>
 </html>
