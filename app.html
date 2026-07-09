@@ -35,10 +35,10 @@
       <section class="dashboard">
         <div class="dashboard-top">
           <div>
-            <p class="eyebrow">Live API-powered brief builder</p>
-            <h1>Build category briefs from selected YouTube videos</h1>
+            <p class="eyebrow">Live API-powered workbench</p>
+            <h1>Turn a YouTube source list into a category brief</h1>
             <p class="dashboard-subtitle">
-              Paste known public video URLs, fetch read-only YouTube metadata, and generate a category-specific brief with source evidence.
+              For operators who already have public YouTube videos and need a fast, evidence-backed category readout they can export.
             </p>
           </div>
           <div class="status-strip" aria-label="API status">
@@ -71,9 +71,44 @@
           </div>
         </section>
 
+        <section class="panel setup-panel" aria-labelledby="brief-setup-title">
+          <div class="panel-heading">
+            <h2 id="brief-setup-title">Brief setup</h2>
+            <span>Work request</span>
+          </div>
+          <div class="control-body">
+            <div class="setup-grid">
+              <label class="field">
+                <span>Brief name</span>
+                <input id="brief-title" type="text" spellcheck="false" value="Selected public video category brief">
+              </label>
+              <label class="field">
+                <span>Use case</span>
+                <select id="brief-audience">
+                  <option value="editorial planning">Editorial planning</option>
+                  <option value="research notes">Research notes</option>
+                  <option value="content review">Content review</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Category region</span>
+                <select id="region-code">
+                  <option value="JP">Japan category labels</option>
+                  <option value="US">United States category labels</option>
+                  <option value="GB">United Kingdom category labels</option>
+                </select>
+              </label>
+              <label class="field wide">
+                <span>Decision question</span>
+                <input id="decision-question" type="text" spellcheck="false" value="Which category and channel context should be emphasized for this source list?">
+              </label>
+            </div>
+          </div>
+        </section>
+
         <section class="panel control-panel" aria-labelledby="live-api-title">
           <div class="panel-heading">
-            <h2 id="live-api-title">Live API run</h2>
+            <h2 id="live-api-title">Source input and live API run</h2>
             <span>Browser-only API key</span>
           </div>
           <div class="control-body">
@@ -123,7 +158,7 @@
         <div class="dashboard-grid">
           <section class="panel wide-panel service-result-panel">
             <div class="panel-heading">
-              <h2>Brief result</h2>
+              <h2>Decision brief</h2>
               <span id="brief-mode">Sample deliverable</span>
             </div>
             <div class="brief-result" id="brief-result">
@@ -142,6 +177,30 @@
                 <strong>Export review note</strong>
                 <p>Copy the generated report for the YouTube API Services review response or internal notes.</p>
               </article>
+            </div>
+          </section>
+
+          <section class="panel wide-panel">
+            <div class="panel-heading">
+              <h2>Source evidence</h2>
+              <span>videos.list results</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Video</th>
+                    <th>Category</th>
+                    <th>Channel</th>
+                    <th>Public signals</th>
+                  </tr>
+                </thead>
+                <tbody id="source-table">
+                  <tr>
+                    <td colspan="4">Run a live API review or load sample data to inspect the source set.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </section>
 
@@ -216,6 +275,7 @@
               <pre id="report-output">Run the review to generate a concise report from public YouTube metadata.</pre>
               <div class="action-row">
                 <button class="button secondary action-button" id="copy-report" type="button">Copy report</button>
+                <button class="button secondary action-button" id="download-report" type="button">Download brief</button>
                 <span class="copy-status" id="copy-status"></span>
               </div>
             </div>

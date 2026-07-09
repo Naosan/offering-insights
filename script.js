@@ -90,6 +90,10 @@ const sampleReview = {
 
 const elements = {
   apiKey: document.getElementById("api-key"),
+  briefTitle: document.getElementById("brief-title"),
+  briefAudience: document.getElementById("brief-audience"),
+  regionCode: document.getElementById("region-code"),
+  decisionQuestion: document.getElementById("decision-question"),
   videoIds: document.getElementById("video-ids"),
   runLive: document.getElementById("run-live"),
   loadSample: document.getElementById("load-sample"),
@@ -102,14 +106,25 @@ const elements = {
   briefMode: document.getElementById("brief-mode"),
   briefResult: document.getElementById("brief-result"),
   categoryLabel: document.getElementById("category-label"),
+  sourceTable: document.getElementById("source-table"),
   videoTable: document.getElementById("video-table"),
   channelList: document.getElementById("channel-list"),
   playlistList: document.getElementById("playlist-list"),
   endpointLog: document.getElementById("endpoint-log"),
   reportOutput: document.getElementById("report-output"),
   copyReport: document.getElementById("copy-report"),
+  downloadReport: document.getElementById("download-report"),
   copyStatus: document.getElementById("copy-status")
 };
+
+function getBriefConfig() {
+  return {
+    title: elements.briefTitle?.value.trim() || "Selected public video category brief",
+    audience: elements.briefAudience?.value || "editorial planning",
+    regionCode: elements.regionCode?.value || "JP",
+    question: elements.decisionQuestion?.value.trim() || "Which category and channel context should be emphasized for this source list?"
+  };
+}
 
 function setStatus(message, tone = "neutral") {
   elements.apiState.textContent = message;
@@ -219,6 +234,7 @@ function normalizePlaylistItem(item) {
 async function runLiveReview() {
   const apiKey = elements.apiKey.value.trim();
   const videoIds = extractVideoIds(elements.videoIds.value);
+  const config = getBriefConfig();
 
   if (!apiKey) {
     setStatus("Enter a YouTube Data API key before running the live review.", "warning");
@@ -239,7 +255,7 @@ async function runLiveReview() {
     const categoriesPayload = await requestYouTube(
       "youtube.videoCategories.list",
       "videoCategories",
-      { part: "snippet", regionCode: "JP", key: apiKey },
+      { part: "snippet", regionCode: config.regionCode, key: apiKey },
       endpointLog
     );
     const categoryMap = Object.fromEntries(
@@ -289,6 +305,7 @@ async function runLiveReview() {
 
     renderReview({
       source: "live",
+      config,
       videos,
       channels,
       playlistItems,
@@ -336,6 +353,7 @@ function summarizeByCategory(videos) {
 function renderReview(review) {
   const categorySummaries = summarizeByCategory(review.videos);
   const quotaEstimate = review.endpointLog.reduce((total, item) => total + (item.cost || 0), 0);
+  const config = review.config || getBriefConfig();
 
   elements.metricVideos.textContent = formatNumber(review.videos.length);
   elements.metricChannels.textContent = formatNumber(review.channels.length);
@@ -343,7 +361,22 @@ function renderReview(review) {
   elements.metricEndpoint.textContent = "videos.list";
   elements.categoryLabel.textContent = review.source === "live" ? "Live API results" : "Sample data";
   elements.briefMode.textContent = review.source === "live" ? "Live API deliverable" : "Sample deliverable";
-  renderBriefResult(review, categorySummaries, quotaEstimate);
+  renderBriefResult(review, categorySummaries, quotaEstimate, config);
+
+  elements.sourceTable.innerHTML = review.videos.map(video => `
+    <tr>
+      <td>
+        <strong>${escapeHtml(video.title)}</strong>
+        <div class="muted-line">${escapeHtml(video.id || "sample video")} - ${formatDate(video.publishedAt)}</div>
+      </td>
+      <td>${escapeHtml(video.categoryName)}</td>
+      <td>${escapeHtml(video.channelTitle)}</td>
+      <td>
+        <span class="signal">${formatNumber(video.viewCount)} views</span>
+        <span class="signal">${formatNumber(video.likeCount)} likes</span>
+      </td>
+    </tr>
+  `).join("");
 
   elements.videoTable.innerHTML = categorySummaries.map(summary => `
     <tr>
@@ -394,10 +427,10 @@ function renderReview(review) {
     </li>
   `).join("");
 
-  elements.reportOutput.textContent = buildReport(review, categorySummaries, quotaEstimate);
+  elements.reportOutput.textContent = buildReport(review, categorySummaries, quotaEstimate, config);
 }
 
-function renderBriefResult(review, categorySummaries, quotaEstimate) {
+function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
   const primary = categorySummaries[0];
   const categoryCount = categorySummaries.length;
   const videoCount = review.videos.length;
@@ -435,24 +468,24 @@ function renderBriefResult(review, categorySummaries, quotaEstimate) {
 
   elements.briefResult.innerHTML = `
     <article>
-      <span>Primary category</span>
+      <span>Answer</span>
       <strong>${escapeHtml(primary.categoryName)} leads this source set.</strong>
-      <p>${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos fall in this category, representing ${formatNumber(concentration)}% of the current cohort.</p>
+      <p>For ${escapeHtml(config.audience)}, emphasize this category first: ${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos fall here, representing ${formatNumber(concentration)}% of the current cohort.</p>
     </article>
     <article>
-      <span>Coverage evidence</span>
+      <span>Evidence</span>
       <strong>${formatNumber(categoryCount)} categories and ${formatNumber(channelCount)} public channels reviewed.</strong>
       <p>Top public channel context: ${escapeHtml(topChannel?.title || "No channel returned")}. ${escapeHtml(playlistNote)}</p>
     </article>
     <article>
-      <span>Exportable output</span>
+      <span>Next action</span>
       <strong>Brief generated with ${formatNumber(quotaEstimate)} estimated quota units.</strong>
-      <p>The report below cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"} and keeps the boundary to public metadata.</p>
+      <p>Export the brief for the question: ${escapeHtml(config.question)} It cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"}.</p>
     </article>
   `;
 }
 
-function buildReport(review, categorySummaries, quotaEstimate) {
+function buildReport(review, categorySummaries, quotaEstimate, config) {
   const mode = review.source === "live" ? "Live YouTube Data API run" : "Sample data demonstration";
   const categoryLines = categorySummaries.map(summary => (
     `- ${summary.categoryName}: ${summary.count} sampled video(s), ${summary.channelCount} channel(s), average public views ${formatNumber(summary.averageViews)}. Top sample: "${summary.topVideo.title}".`
@@ -462,10 +495,12 @@ function buildReport(review, categorySummaries, quotaEstimate) {
   ));
 
   return [
-    "Offering Insights category-specific observation report",
+    config.title,
     "Service outcome: Build a category brief from operator-selected public YouTube videos.",
-    "Review question: How do selected public videos compare across YouTube categories, and which public channel signals help explain that distribution?",
+    `Use case: ${config.audience}`,
+    `Decision question: ${config.question}`,
     `Mode: ${mode}`,
+    `Category region: ${config.regionCode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
     "Input method: operator-selected public video IDs or URLs; no youtube.search.list keyword lookup.",
     `Videos sampled: ${review.videos.length}`,
@@ -478,8 +513,13 @@ function buildReport(review, categorySummaries, quotaEstimate) {
     "Category observations:",
     ...categoryLines,
     "",
+    "Source evidence:",
+    ...review.videos.map(video => (
+      `- ${video.title} | category=${video.categoryName} | channel=${video.channelTitle} | views=${formatNumber(video.viewCount)} | published=${formatDate(video.publishedAt)}`
+    )),
+    "",
     "Reporting use case:",
-    "The dashboard supports editorial and research planning by comparing a deliberately selected cohort, grouping returned videos by YouTube category, adding public channel context, reviewing adjacent public playlist membership, and producing a concise observation report."
+    "The dashboard supports a real review workflow by turning a selected public source list into a category brief, evidence table, endpoint audit trail, and exportable observation report."
   ].join("\n");
 }
 
@@ -492,9 +532,23 @@ async function copyReport() {
   }
 }
 
+function downloadReport() {
+  const blob = new Blob([elements.reportOutput.textContent], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const filename = `${getBriefConfig().title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "offering-insights-brief"}.txt`;
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  elements.copyStatus.textContent = "Download ready.";
+}
+
 elements.runLive?.addEventListener("click", runLiveReview);
 elements.loadSample?.addEventListener("click", () => {
-  renderReview(sampleReview);
+  renderReview({ ...sampleReview, config: getBriefConfig() });
   setStatus("Sample public video cohort loaded. Use the live API run for screencast evidence.", "warning");
 });
 elements.clearKey?.addEventListener("click", () => {
@@ -502,5 +556,6 @@ elements.clearKey?.addEventListener("click", () => {
   setStatus("API key field cleared.", "neutral");
 });
 elements.copyReport?.addEventListener("click", copyReport);
+elements.downloadReport?.addEventListener("click", downloadReport);
 
-renderReview(sampleReview);
+renderReview({ ...sampleReview, config: getBriefConfig() });

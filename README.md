@@ -24,11 +24,12 @@ Use `app.html` for the follow-up screencast requested by the YouTube API Service
 Recommended recording flow:
 
 1. Open `https://naosan.github.io/offering-insights/app.html`.
-2. Paste the YouTube Data API key into the browser-only API key field.
-3. Keep the selected public video IDs or paste other public video URLs selected outside the API.
-4. Click `Run live API review`.
-5. Show the generated brief result, category observations, channel context, playlist review, endpoint audit trail, and generated report.
-6. State that the demo uses public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
+2. Set the brief name, use case, category region, and decision question.
+3. Paste the YouTube Data API key into the browser-only API key field.
+4. Keep the selected public video IDs or paste other public video URLs selected outside the API.
+5. Click `Run live API review`.
+6. Show the decision brief, source evidence table, category observations, channel context, playlist review, endpoint audit trail, generated report, and download action.
+7. State that the demo uses public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 ## GitHub Pages publishing notes
 

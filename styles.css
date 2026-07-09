@@ -574,6 +574,12 @@ h3 {
   padding: 18px;
 }
 
+.setup-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.95fr) minmax(180px, 0.55fr) minmax(180px, 0.55fr);
+  gap: 14px;
+}
+
 .input-grid {
   display: grid;
   grid-template-columns: minmax(220px, 0.45fr) minmax(280px, 1fr);
@@ -589,6 +595,10 @@ h3 {
   min-width: 0;
 }
 
+.setup-grid .field.wide {
+  grid-column: 1 / -1;
+}
+
 .field span {
   color: var(--muted);
   font-size: 12px;
@@ -597,6 +607,7 @@ h3 {
 }
 
 input,
+select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -606,7 +617,8 @@ textarea {
   font: inherit;
 }
 
-input {
+input,
+select {
   min-height: 44px;
   padding: 0 12px;
 }
@@ -618,6 +630,7 @@ textarea {
 }
 
 input:focus,
+select:focus,
 textarea:focus {
   outline: 3px solid rgba(37, 99, 235, 0.18);
   border-color: var(--blue);
@@ -690,6 +703,7 @@ textarea:focus {
 
 .control-panel,
 .brief-panel,
+.setup-panel,
 .wide-panel {
   grid-column: 1 / -1;
 }
@@ -966,6 +980,10 @@ td {
   }
 
   .input-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .setup-grid {
     grid-template-columns: 1fr;
   }
 
