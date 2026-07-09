@@ -27,6 +27,8 @@
         <div class="sidebar-title">Offering Insights</div>
         <button class="nav-button active" type="button">Brief builder</button>
         <button class="nav-button" type="button">Source input</button>
+        <button class="nav-button" type="button">Video sources</button>
+        <button class="nav-button" type="button">Mind map</button>
         <button class="nav-button" type="button">Category evidence</button>
         <button class="nav-button" type="button">Evidence log</button>
         <button class="nav-button" type="button">Export brief</button>
@@ -177,6 +179,52 @@
                 <strong>Export review note</strong>
                 <p>Copy the generated report for the YouTube API Services review response or internal notes.</p>
               </article>
+            </div>
+          </section>
+
+          <section class="panel wide-panel source-video-panel">
+            <div class="panel-heading">
+              <h2>Quoted video sources</h2>
+              <span>videos.list thumbnails and links</span>
+            </div>
+            <div class="video-source-layout">
+              <div class="featured-video" id="featured-video">
+                <strong>Run a live API review to load a featured YouTube source.</strong>
+                <p>Offering Insights shows public videos as cited sources for the generated category brief.</p>
+              </div>
+              <div class="video-gallery" id="video-gallery">
+                <article>
+                  <strong>No video sources loaded</strong>
+                  <p>The source gallery is built from public video metadata returned by `youtube.videos.list`.</p>
+                </article>
+              </div>
+            </div>
+          </section>
+
+          <section class="mindmap-workspace wide-panel" aria-labelledby="mindmap-title">
+            <div class="mindmap-heading">
+              <div>
+                <h2 id="mindmap-title">Brainstorm map</h2>
+                <p>Use the API results as a live map of brief, categories, videos, and channel context.</p>
+              </div>
+              <span>Three.js interactive view</span>
+            </div>
+            <div class="mindmap-layout">
+              <div class="mindmap-stage">
+                <canvas id="mindmap-canvas" aria-label="Interactive category mind map"></canvas>
+              </div>
+              <aside class="brainstorm-panel" aria-label="Brainstorming prompts">
+                <div>
+                  <span>Selected node</span>
+                  <strong id="mindmap-detail-title">Category brief</strong>
+                  <p id="mindmap-detail-body">Run the API review, then click a node in the map to generate focused brainstorming prompts.</p>
+                </div>
+                <ol id="brainstorm-list">
+                  <li>Use category concentration to decide the lead angle.</li>
+                  <li>Use source videos as evidence, not as private user data.</li>
+                  <li>Use endpoint audit details when explaining the workflow.</li>
+                </ol>
+              </aside>
             </div>
           </section>
 

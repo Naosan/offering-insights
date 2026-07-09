@@ -11,31 +11,37 @@ const sampleReview = {
   source: "sample",
   videos: [
     {
+      id: "aircAruvnKk",
       title: "Sample explainer: neural network foundations",
       channelTitle: "Public Math Learning Channel",
       categoryId: "27",
       categoryName: "Education",
       publishedAt: "2026-06-20T10:00:00Z",
       viewCount: 23600000,
-      likeCount: 620000
+      likeCount: 620000,
+      thumbnailUrl: "https://i.ytimg.com/vi/aircAruvnKk/hqdefault.jpg"
     },
     {
+      id: "IHZwWFHWa-w",
       title: "Sample talk: how practice shapes learning",
       channelTitle: "Public Conference Channel",
       categoryId: "28",
       categoryName: "Science & Technology",
       publishedAt: "2026-06-22T08:30:00Z",
       viewCount: 2200000,
-      likeCount: 58000
+      likeCount: 58000,
+      thumbnailUrl: "https://i.ytimg.com/vi/IHZwWFHWa-w/hqdefault.jpg"
     },
     {
+      id: "Ks-_Mh1QhMc",
       title: "Sample explainer: why complex systems are difficult to explain",
       channelTitle: "Public Explainer Channel",
       categoryId: "27",
       categoryName: "Education",
       publishedAt: "2026-06-25T13:45:00Z",
       viewCount: 12300000,
-      likeCount: 410000
+      likeCount: 410000,
+      thumbnailUrl: "https://i.ytimg.com/vi/Ks-_Mh1QhMc/hqdefault.jpg"
     }
   ],
   channels: [
@@ -105,6 +111,12 @@ const elements = {
   metricEndpoint: document.getElementById("metric-endpoint"),
   briefMode: document.getElementById("brief-mode"),
   briefResult: document.getElementById("brief-result"),
+  featuredVideo: document.getElementById("featured-video"),
+  videoGallery: document.getElementById("video-gallery"),
+  mindmapCanvas: document.getElementById("mindmap-canvas"),
+  mindmapDetailTitle: document.getElementById("mindmap-detail-title"),
+  mindmapDetailBody: document.getElementById("mindmap-detail-body"),
+  brainstormList: document.getElementById("brainstorm-list"),
   categoryLabel: document.getElementById("category-label"),
   sourceTable: document.getElementById("source-table"),
   videoTable: document.getElementById("video-table"),
@@ -197,6 +209,7 @@ function uploadsPlaylistForChannel(channelId) {
 }
 
 function normalizeVideo(item, categoryMap) {
+  const thumbnails = item.snippet?.thumbnails || {};
   return {
     id: item.id,
     title: item.snippet?.title || "Untitled video",
@@ -207,7 +220,8 @@ function normalizeVideo(item, categoryMap) {
     publishedAt: item.snippet?.publishedAt || "",
     viewCount: Number(item.statistics?.viewCount || 0),
     likeCount: Number(item.statistics?.likeCount || 0),
-    commentCount: Number(item.statistics?.commentCount || 0)
+    commentCount: Number(item.statistics?.commentCount || 0),
+    thumbnailUrl: thumbnails.maxres?.url || thumbnails.high?.url || thumbnails.medium?.url || thumbnails.default?.url || ""
   };
 }
 
@@ -345,7 +359,8 @@ function summarizeByCategory(videos) {
       count: group.videos.length,
       channelCount: group.channels.size,
       averageViews,
-      topVideo
+      topVideo,
+      videos: group.videos
     };
   }).sort((a, b) => b.count - a.count || b.averageViews - a.averageViews);
 }
@@ -362,6 +377,8 @@ function renderReview(review) {
   elements.categoryLabel.textContent = review.source === "live" ? "Live API results" : "Sample data";
   elements.briefMode.textContent = review.source === "live" ? "Live API deliverable" : "Sample deliverable";
   renderBriefResult(review, categorySummaries, quotaEstimate, config);
+  renderVideoSources(review, categorySummaries);
+  updateMindmap(review, categorySummaries, config);
 
   elements.sourceTable.innerHTML = review.videos.map(video => `
     <tr>
@@ -428,6 +445,390 @@ function renderReview(review) {
   `).join("");
 
   elements.reportOutput.textContent = buildReport(review, categorySummaries, quotaEstimate, config);
+}
+
+function youtubeWatchUrl(videoId) {
+  return videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` : "https://www.youtube.com/";
+}
+
+function renderVideoSources(review, categorySummaries) {
+  const videos = review.videos || [];
+  const primaryCategory = categorySummaries[0]?.categoryName || "selected source set";
+  const featured = categorySummaries[0]?.topVideo || videos[0];
+
+  if (!videos.length || !featured?.id) {
+    elements.featuredVideo.innerHTML = `
+      <strong>Run a live API review to load a featured YouTube source.</strong>
+      <p>Offering Insights shows public videos as cited sources for the generated category brief.</p>
+    `;
+    elements.videoGallery.innerHTML = `
+      <article>
+        <strong>No video sources loaded</strong>
+        <p>The source gallery is built from public video metadata returned by youtube.videos.list.</p>
+      </article>
+    `;
+    return;
+  }
+
+  elements.featuredVideo.innerHTML = `
+    <a class="featured-thumb" href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener" aria-label="Open featured YouTube source">
+      <img src="${escapeHtml(featured.thumbnailUrl || `https://i.ytimg.com/vi/${featured.id}/hqdefault.jpg`)}" alt="">
+      <span>Open YouTube source</span>
+    </a>
+    <div>
+      <span>Featured source for ${escapeHtml(primaryCategory)}</span>
+      <strong>${escapeHtml(featured.title)}</strong>
+      <p>${escapeHtml(featured.channelTitle)} - ${formatNumber(featured.viewCount)} public views - ${formatDate(featured.publishedAt)}</p>
+      <a href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener">Open source on YouTube</a>
+    </div>
+  `;
+
+  elements.videoGallery.innerHTML = videos.map(video => `
+    <article>
+      <a class="video-thumb" href="${escapeHtml(youtubeWatchUrl(video.id))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(video.title)} on YouTube">
+        <img src="${escapeHtml(video.thumbnailUrl || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`)}" alt="">
+      </a>
+      <div>
+        <span>${escapeHtml(video.categoryName)}</span>
+        <strong>${escapeHtml(video.title)}</strong>
+        <p>${escapeHtml(video.channelTitle)} - ${formatNumber(video.viewCount)} views</p>
+      </div>
+    </article>
+  `).join("");
+}
+
+const mindmapState = {
+  initialized: false,
+  loading: false,
+  THREE: null,
+  scene: null,
+  camera: null,
+  renderer: null,
+  group: null,
+  nodes: [],
+  raycaster: null,
+  pointer: null,
+  selected: null,
+  animationFrame: null,
+  data: null
+};
+
+async function ensureMindmap() {
+  if (!elements.mindmapCanvas || mindmapState.initialized || mindmapState.loading) {
+    return;
+  }
+
+  mindmapState.loading = true;
+  try {
+    const THREE = await import("https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js");
+    mindmapState.THREE = THREE;
+    mindmapState.scene = new THREE.Scene();
+    mindmapState.camera = new THREE.PerspectiveCamera(42, 1, 0.1, 1000);
+    mindmapState.camera.position.set(0, 0, 28);
+    mindmapState.renderer = new THREE.WebGLRenderer({
+      canvas: elements.mindmapCanvas,
+      antialias: true,
+      alpha: true,
+      preserveDrawingBuffer: true
+    });
+    mindmapState.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    mindmapState.group = new THREE.Group();
+    mindmapState.scene.add(mindmapState.group);
+    mindmapState.raycaster = new THREE.Raycaster();
+    mindmapState.pointer = new THREE.Vector2();
+
+    elements.mindmapCanvas.addEventListener("pointerdown", handleMindmapPointer);
+    window.addEventListener("resize", resizeMindmap);
+    resizeMindmap();
+    mindmapState.initialized = true;
+    animateMindmap();
+  } catch (error) {
+    elements.mindmapDetailTitle.textContent = "Mind map unavailable";
+    elements.mindmapDetailBody.textContent = "Three.js could not be loaded. The source tables and generated report remain available.";
+  } finally {
+    mindmapState.loading = false;
+  }
+}
+
+function updateMindmap(review, categorySummaries, config) {
+  mindmapState.data = { review, categorySummaries, config };
+  renderBrainstormDetail({
+    type: "brief",
+    label: config.title,
+    detail: `${review.videos.length} selected public videos across ${categorySummaries.length} categories.`
+  });
+
+  ensureMindmap().then(() => {
+    if (mindmapState.initialized) {
+      buildMindmapScene(review, categorySummaries, config);
+    }
+  });
+}
+
+function resizeMindmap() {
+  if (!mindmapState.renderer || !elements.mindmapCanvas) return;
+  const rect = elements.mindmapCanvas.parentElement.getBoundingClientRect();
+  const width = Math.max(Math.floor(rect.width), 320);
+  const height = Math.max(Math.floor(rect.height), 360);
+  mindmapState.renderer.setSize(width, height, false);
+  mindmapState.camera.aspect = width / height;
+  mindmapState.camera.updateProjectionMatrix();
+}
+
+function clearMindmapGroup() {
+  const { group } = mindmapState;
+  if (!group) return;
+  while (group.children.length) {
+    const child = group.children.pop();
+    if (child.geometry) child.geometry.dispose();
+    if (child.material) {
+      if (child.material.map) child.material.map.dispose();
+      child.material.dispose();
+    }
+  }
+  mindmapState.nodes = [];
+}
+
+function buildMindmapScene(review, categorySummaries, config) {
+  const THREE = mindmapState.THREE;
+  if (!THREE || !mindmapState.group) return;
+
+  clearMindmapGroup();
+
+  const palette = {
+    brief: 0x2563eb,
+    category: 0x188267,
+    video: 0xa36f00,
+    channel: 0xc65f44
+  };
+  const center = addMindmapNode({
+    label: "Brief",
+    detail: config.title,
+    type: "brief",
+    position: new THREE.Vector3(0, 0, 0),
+    color: palette.brief,
+    scale: 1.25
+  });
+
+  const categoryRadius = 7.5;
+  const videoRadius = 4.2;
+  const channelRadius = 9.8;
+  const totalCategories = Math.max(categorySummaries.length, 1);
+
+  categorySummaries.forEach((summary, index) => {
+    const angle = (index / totalCategories) * Math.PI * 2 - Math.PI / 2;
+    const categoryPosition = new THREE.Vector3(
+      Math.cos(angle) * categoryRadius,
+      Math.sin(angle) * categoryRadius,
+      Math.sin(angle * 1.7) * 1.2
+    );
+    const categoryNode = addMindmapNode({
+      label: summary.categoryName,
+      detail: `${summary.count} videos, average views ${formatNumber(summary.averageViews)}`,
+      type: "category",
+      position: categoryPosition,
+      color: palette.category,
+      scale: 0.95,
+      summary
+    });
+    addMindmapLink(center.position, categoryNode.position, 0x9eb4c7);
+
+    summary.videos.forEach((video, videoIndex) => {
+      const offset = (videoIndex - (summary.videos.length - 1) / 2) * 0.78;
+      const videoAngle = angle + offset;
+      const videoPosition = new THREE.Vector3(
+        categoryPosition.x + Math.cos(videoAngle) * videoRadius,
+        categoryPosition.y + Math.sin(videoAngle) * videoRadius,
+        categoryPosition.z + 1.1
+      );
+      const videoNode = addMindmapNode({
+        label: truncateLabel(video.title, 24),
+        detail: `${video.channelTitle} - ${formatNumber(video.viewCount)} public views`,
+        type: "video",
+        position: videoPosition,
+        color: palette.video,
+        scale: 0.68,
+        video
+      });
+      addMindmapLink(categoryNode.position, videoNode.position, 0xd3b16a);
+    });
+  });
+
+  review.channels.slice(0, 6).forEach((channel, index) => {
+    const angle = (index / Math.max(review.channels.length, 1)) * Math.PI * 2 + Math.PI / 5;
+    const channelPosition = new THREE.Vector3(
+      Math.cos(angle) * channelRadius,
+      Math.sin(angle) * channelRadius,
+      -1.6
+    );
+    const channelNode = addMindmapNode({
+      label: truncateLabel(channel.title, 20),
+      detail: `${formatNumber(channel.subscriberCount)} subscribers, ${formatNumber(channel.videoCount)} public videos`,
+      type: "channel",
+      position: channelPosition,
+      color: palette.channel,
+      scale: 0.62,
+      channel
+    });
+    addMindmapLink(center.position, channelNode.position, 0xe0b0a3);
+  });
+}
+
+function truncateLabel(value, maxLength) {
+  const text = String(value || "");
+  return text.length > maxLength ? `${text.slice(0, maxLength - 1)}...` : text;
+}
+
+function addMindmapNode({ label, detail, type, position, color, scale, summary, video, channel }) {
+  const THREE = mindmapState.THREE;
+  const geometry = new THREE.SphereGeometry(scale, 24, 16);
+  const material = new THREE.MeshStandardMaterial({
+    color,
+    roughness: 0.72,
+    metalness: 0.08,
+    emissive: color,
+    emissiveIntensity: 0.08
+  });
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.copy(position);
+  mesh.userData = { label, detail, type, summary, video, channel };
+  mindmapState.group.add(mesh);
+  mindmapState.nodes.push(mesh);
+
+  const labelSprite = makeLabelSprite(label, color);
+  labelSprite.position.set(position.x, position.y - scale - 0.58, position.z);
+  labelSprite.userData = { label, detail, type, summary, video, channel };
+  mindmapState.group.add(labelSprite);
+
+  return mesh;
+}
+
+function addMindmapLink(start, end, color) {
+  const THREE = mindmapState.THREE;
+  const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
+  const material = new THREE.LineBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.68
+  });
+  const line = new THREE.Line(geometry, material);
+  mindmapState.group.add(line);
+}
+
+function makeLabelSprite(text, color) {
+  const THREE = mindmapState.THREE;
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 128;
+  const context = canvas.getContext("2d");
+  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "rgba(255, 255, 255, 0.94)";
+  context.strokeStyle = `#${color.toString(16).padStart(6, "0")}`;
+  context.lineWidth = 4;
+  roundRect(context, 16, 24, 480, 72, 16);
+  context.fill();
+  context.stroke();
+  context.fillStyle = "#17212b";
+  context.font = "700 28px Inter, Arial, sans-serif";
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+  context.fillText(text, 256, 60, 440);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(4.4, 1.1, 1);
+  return sprite;
+}
+
+function roundRect(context, x, y, width, height, radius) {
+  context.beginPath();
+  context.moveTo(x + radius, y);
+  context.lineTo(x + width - radius, y);
+  context.quadraticCurveTo(x + width, y, x + width, y + radius);
+  context.lineTo(x + width, y + height - radius);
+  context.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  context.lineTo(x + radius, y + height);
+  context.quadraticCurveTo(x, y + height, x, y + height - radius);
+  context.lineTo(x, y + radius);
+  context.quadraticCurveTo(x, y, x + radius, y);
+  context.closePath();
+}
+
+function handleMindmapPointer(event) {
+  if (!mindmapState.renderer || !mindmapState.camera || !mindmapState.raycaster) return;
+  const rect = elements.mindmapCanvas.getBoundingClientRect();
+  mindmapState.pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+  mindmapState.pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  mindmapState.raycaster.setFromCamera(mindmapState.pointer, mindmapState.camera);
+  const intersections = mindmapState.raycaster.intersectObjects(mindmapState.nodes, false);
+  if (!intersections.length) return;
+
+  const selected = intersections[0].object;
+  mindmapState.selected = selected;
+  mindmapState.nodes.forEach(node => {
+    node.material.emissiveIntensity = node === selected ? 0.34 : 0.08;
+  });
+  renderBrainstormDetail(selected.userData);
+}
+
+function renderBrainstormDetail(data) {
+  if (!data || !elements.mindmapDetailTitle) return;
+
+  elements.mindmapDetailTitle.textContent = data.label || "Category brief";
+  elements.mindmapDetailBody.textContent = data.detail || "Use the selected node as a prompt for the brief.";
+  const prompts = brainstormPromptsFor(data);
+  elements.brainstormList.innerHTML = prompts.map(prompt => `<li>${escapeHtml(prompt)}</li>`).join("");
+}
+
+function brainstormPromptsFor(data) {
+  if (data.type === "category" && data.summary) {
+    return [
+      `Lead with ${data.summary.categoryName} if the review needs a single category lens.`,
+      `Compare ${formatNumber(data.summary.count)} selected video${data.summary.count === 1 ? "" : "s"} against outlier categories.`,
+      `Use average public views ${formatNumber(data.summary.averageViews)} as context, not as a private-user signal.`
+    ];
+  }
+
+  if (data.type === "video" && data.video) {
+    return [
+      `Use "${data.video.title}" as a cited public source in the evidence section.`,
+      `Check whether its category ${data.video.categoryName} matches the intended brief angle.`,
+      `Open the YouTube source only when the reviewer needs to inspect the original public video.`
+    ];
+  }
+
+  if (data.type === "channel" && data.channel) {
+    return [
+      `Use ${data.channel.title} as channel context for source credibility.`,
+      `Compare subscriber count and public video count with the other returned channels.`,
+      `Keep the note limited to public channel metadata from channels.list.`
+    ];
+  }
+
+  return [
+    "Define the decision question before running the source review.",
+    "Use category concentration to pick a lead angle.",
+    "Use the endpoint trail as the compliance evidence for the brief."
+  ];
+}
+
+function animateMindmap() {
+  if (!mindmapState.renderer || !mindmapState.scene || !mindmapState.camera) return;
+  mindmapState.animationFrame = requestAnimationFrame(animateMindmap);
+  if (mindmapState.group) {
+    mindmapState.group.rotation.y += 0.0022;
+    mindmapState.group.rotation.x = Math.sin(Date.now() * 0.00025) * 0.08;
+  }
+  const THREE = mindmapState.THREE;
+  if (THREE && !mindmapState.scene.userData.lit) {
+    const ambient = new THREE.AmbientLight(0xffffff, 0.78);
+    const key = new THREE.DirectionalLight(0xffffff, 1.3);
+    key.position.set(5, 8, 10);
+    mindmapState.scene.add(ambient, key);
+    mindmapState.scene.userData.lit = true;
+  }
+  mindmapState.renderer.render(mindmapState.scene, mindmapState.camera);
 }
 
 function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
@@ -517,6 +918,9 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     ...review.videos.map(video => (
       `- ${video.title} | category=${video.categoryName} | channel=${video.channelTitle} | views=${formatNumber(video.viewCount)} | published=${formatDate(video.publishedAt)}`
     )),
+    "",
+    "Visual workspace:",
+    "The page renders quoted YouTube source cards from videos.list thumbnails and links, then builds a Three.js brainstorm map from the same public metadata so the operator can explore categories, source videos, and channel context before exporting the brief.",
     "",
     "Reporting use case:",
     "The dashboard supports a real review workflow by turning a selected public source list into a category brief, evidence table, endpoint audit trail, and exportable observation report."

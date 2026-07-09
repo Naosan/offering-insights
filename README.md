@@ -28,7 +28,7 @@ Recommended recording flow:
 3. Paste the YouTube Data API key into the browser-only API key field.
 4. Keep the selected public video IDs or paste other public video URLs selected outside the API.
 5. Click `Run live API review`.
-6. Show the decision brief, source evidence table, category observations, channel context, playlist review, endpoint audit trail, generated report, and download action.
+6. Show the decision brief, quoted YouTube source cards, Three.js brainstorm map, source evidence table, category observations, channel context, playlist review, endpoint audit trail, generated report, and download action.
 7. State that the demo uses public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 ## GitHub Pages publishing notes
