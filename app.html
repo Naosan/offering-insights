@@ -36,9 +36,9 @@
         <div class="dashboard-top">
           <div>
             <p class="eyebrow">Prototype review workflow</p>
-            <h1>AI learning video category review</h1>
+            <h1>Category-specific public video reporting</h1>
             <p class="dashboard-subtitle">
-              Turns a curated set of public YouTube video IDs into category-specific observations and a short reporting note.
+              Turns operator-selected public YouTube video IDs into category-specific observations and a short reporting note.
             </p>
           </div>
           <div class="status-strip" aria-label="API status">
@@ -55,12 +55,12 @@
           <div class="brief-grid">
             <article>
               <span>Review question</span>
-              <strong>How are public AI learning videos distributed across YouTube categories?</strong>
+              <strong>How do selected public videos compare across YouTube categories?</strong>
               <p>Compare a small, operator-selected cohort of videos and identify category, channel, and engagement signals for editorial planning.</p>
             </article>
             <article>
               <span>Input boundary</span>
-              <strong>Curated public video IDs, not keyword search.</strong>
+              <strong>Operator-selected public video IDs, not keyword search.</strong>
               <p>The operator supplies known public video IDs or URLs. The prototype does not call `youtube.search.list` and does not collect private user data.</p>
             </article>
             <article>
@@ -83,8 +83,8 @@
                 <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Paste API key for recording only">
               </label>
               <label class="field wide">
-                <span>Curated public video IDs or URLs</span>
-                <textarea id="video-ids" rows="3" spellcheck="false">aircAruvnKk, IHZwWFHWa-w, hJP5GqnTrNo, R9OHn5ZF4Uo</textarea>
+                <span>Selected public video IDs or URLs</span>
+                <textarea id="video-ids" rows="3" spellcheck="false">aircAruvnKk, Ks-_Mh1QhMc, 5MgBikgcWnY, wupToqz1e2g</textarea>
               </label>
             </div>
             <div class="action-row">
@@ -96,7 +96,7 @@
               The key is used only in this browser session to call Google API endpoints directly. It is not stored by this static site and is not sent to an Offering Insights server.
             </p>
             <div class="api-state" id="api-state" role="status" aria-live="polite">
-              Ready. Enter an API key and run the curated AI learning review for the screencast.
+              Ready. Enter an API key and run the selected public video review for the screencast.
             </div>
           </div>
         </section>

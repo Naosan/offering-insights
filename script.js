@@ -20,7 +20,7 @@ const sampleReview = {
       likeCount: 620000
     },
     {
-      title: "Sample talk: AI in education",
+      title: "Sample talk: how practice shapes learning",
       channelTitle: "Public Conference Channel",
       categoryId: "28",
       categoryName: "Science & Technology",
@@ -29,7 +29,7 @@ const sampleReview = {
       likeCount: 58000
     },
     {
-      title: "Sample explainer: why AI models are difficult to explain",
+      title: "Sample explainer: why complex systems are difficult to explain",
       channelTitle: "Public Explainer Channel",
       categoryId: "27",
       categoryName: "Education",
@@ -41,7 +41,7 @@ const sampleReview = {
   channels: [
     {
       title: "Public Math Learning Channel",
-      description: "Public channel metadata sample for AI education reporting.",
+      description: "Public channel metadata sample for category-specific reporting.",
       subscriberCount: 6700000,
       videoCount: 180
     },
@@ -54,7 +54,7 @@ const sampleReview = {
   ],
   playlistItems: [
     {
-      title: "Sample playlist item: AI learning follow-up",
+      title: "Sample playlist item: category review follow-up",
       videoId: "sample-video-a",
       channelTitle: "Public Math Learning Channel"
     },
@@ -72,7 +72,7 @@ const sampleReview = {
     },
     {
       name: "youtube.videos.list",
-      detail: "Sample public metadata for the curated AI learning cohort.",
+      detail: "Sample public metadata for the selected video cohort.",
       cost: 1
     },
     {
@@ -292,7 +292,7 @@ async function runLiveReview() {
       playlistItems,
       endpointLog
     });
-    setStatus("Live API review completed. The dashboard now shows the curated cohort, category observations, and endpoint evidence.", "success");
+    setStatus("Live API review completed. The dashboard now shows the selected cohort, category observations, and endpoint evidence.", "success");
   } catch (error) {
     setStatus(error.message, "error");
   } finally {
@@ -404,10 +404,10 @@ function buildReport(review, categorySummaries, quotaEstimate) {
 
   return [
     "Offering Insights category-specific observation report",
-    "Review question: How are public AI learning videos distributed across YouTube categories, and which public channel signals help explain that distribution?",
+    "Review question: How do selected public videos compare across YouTube categories, and which public channel signals help explain that distribution?",
     `Mode: ${mode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
-    "Input method: operator-curated public video IDs or URLs; no youtube.search.list keyword lookup.",
+    "Input method: operator-selected public video IDs or URLs; no youtube.search.list keyword lookup.",
     `Videos sampled: ${review.videos.length}`,
     `Channels reviewed: ${review.channels.length}`,
     `Estimated quota units for this review: ${quotaEstimate}`,
@@ -419,7 +419,7 @@ function buildReport(review, categorySummaries, quotaEstimate) {
     ...categoryLines,
     "",
     "Reporting use case:",
-    "The dashboard supports editorial and market research planning by comparing a deliberately selected cohort, grouping returned videos by YouTube category, adding public channel context, reviewing adjacent public playlist membership, and producing a concise observation report."
+    "The dashboard supports editorial and research planning by comparing a deliberately selected cohort, grouping returned videos by YouTube category, adding public channel context, reviewing adjacent public playlist membership, and producing a concise observation report."
   ].join("\n");
 }
 
@@ -435,7 +435,7 @@ async function copyReport() {
 elements.runLive?.addEventListener("click", runLiveReview);
 elements.loadSample?.addEventListener("click", () => {
   renderReview(sampleReview);
-  setStatus("Sample AI learning cohort loaded. Use the live API run for screencast evidence.", "warning");
+  setStatus("Sample public video cohort loaded. Use the live API run for screencast evidence.", "warning");
 });
 elements.clearKey?.addEventListener("click", () => {
   elements.apiKey.value = "";

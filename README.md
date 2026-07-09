@@ -25,7 +25,7 @@ Recommended recording flow:
 
 1. Open `https://naosan.github.io/offering-insights/app.html`.
 2. Paste the YouTube Data API key into the browser-only API key field.
-3. Keep the curated AI learning video IDs or paste other public video URLs selected outside the API.
+3. Keep the selected public video IDs or paste other public video URLs selected outside the API.
 4. Click `Run live API review`.
 5. Show the category observations, channel context, playlist review, endpoint audit trail, and generated report.
 6. State that the demo uses public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
