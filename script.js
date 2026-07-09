@@ -13,7 +13,7 @@ const sampleReview = {
     {
       id: "aircAruvnKk",
       title: "Sample explainer: neural network foundations",
-      channelTitle: "Public Math Learning Channel",
+      channelTitle: "Public Math Explainer Channel",
       categoryId: "27",
       categoryName: "Education",
       publishedAt: "2026-06-20T10:00:00Z",
@@ -23,7 +23,7 @@ const sampleReview = {
     },
     {
       id: "IHZwWFHWa-w",
-      title: "Sample talk: how practice shapes learning",
+      title: "Sample talk: how practice shapes performance",
       channelTitle: "Public Conference Channel",
       categoryId: "28",
       categoryName: "Science & Technology",
@@ -46,8 +46,8 @@ const sampleReview = {
   ],
   channels: [
     {
-      title: "Public Math Learning Channel",
-      description: "Public channel metadata sample for learning-content planning.",
+      title: "Public Math Explainer Channel",
+      description: "Public channel metadata sample for category-backed planning.",
       subscriberCount: 6700000,
       videoCount: 180
     },
@@ -60,14 +60,14 @@ const sampleReview = {
   ],
   playlistItems: [
     {
-      title: "Sample playlist item: learning angle follow-up",
+      title: "Sample playlist item: category angle follow-up",
       videoId: "sample-video-a",
-      channelTitle: "Public Math Learning Channel"
+      channelTitle: "Public Math Explainer Channel"
     },
     {
       title: "Sample playlist item: related public explainer",
       videoId: "sample-video-b",
-      channelTitle: "Public Math Learning Channel"
+      channelTitle: "Public Math Explainer Channel"
     }
   ],
   endpointLog: [
@@ -132,10 +132,10 @@ const elements = {
 
 function getBriefConfig() {
   return {
-    title: elements.briefTitle?.value.trim() || "AI learning video angle brief",
-    audience: elements.briefAudience?.value || "learning brief",
+    title: elements.briefTitle?.value.trim() || "Selected public video category brief",
+    audience: elements.briefAudience?.value || "category research",
     regionCode: elements.regionCode?.value || "JP",
-    question: elements.decisionQuestion?.value.trim() || "Which learning angle and evidence should this video set support?"
+    question: elements.decisionQuestion?.value.trim() || "Which category angle and evidence should this video set support?"
   };
 }
 
@@ -461,7 +461,7 @@ function renderVideoSources(review, categorySummaries) {
   if (!videos.length || !featured?.id) {
     elements.featuredVideo.innerHTML = `
       <strong>Analyze videos to load a featured YouTube source.</strong>
-      <p>Offering Insights shows public videos as cited sources for the generated learning brief.</p>
+      <p>Offering Insights shows public videos as cited sources for the generated research brief.</p>
     `;
     elements.videoGallery.innerHTML = `
       <article>
@@ -786,7 +786,7 @@ function renderBrainstormDetail(data) {
 function brainstormPromptsFor(data) {
   if (data.type === "category" && data.summary) {
     return [
-      `Lead with ${data.summary.categoryName} if the brief needs a single learning lens.`,
+      `Lead with ${data.summary.categoryName} if the brief needs a single category lens.`,
       `Compare ${formatNumber(data.summary.count)} selected video${data.summary.count === 1 ? "" : "s"} against outlier categories.`,
       `Use average public views ${formatNumber(data.summary.averageViews)} as context, not as a private-user signal.`
     ];
@@ -845,17 +845,17 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
       <article>
         <span>Primary category</span>
         <strong>Waiting for video analysis</strong>
-        <p>Analyze the selected videos to create an evidence-backed learning brief.</p>
+        <p>Analyze the selected videos to create an evidence-backed research brief.</p>
       </article>
       <article>
         <span>Service output</span>
-        <strong>Learning brief with source evidence</strong>
+        <strong>Research brief with source evidence</strong>
         <p>The brief is generated from public YouTube metadata and cited source cards.</p>
       </article>
       <article>
         <span>Next action</span>
         <strong>Export planning note</strong>
-        <p>Copy the generated report for curriculum, editorial, or research planning notes.</p>
+        <p>Copy the generated report for editorial planning, market notes, or category research.</p>
       </article>
     `;
     return;
@@ -899,7 +899,7 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
 
   return [
     config.title,
-    "Service outcome: Build a learning-content brief from selected public YouTube videos.",
+    "Service outcome: Build a category-backed research brief from selected public YouTube videos.",
     `Use case: ${config.audience}`,
     `Decision question: ${config.question}`,
     `Mode: ${mode}`,
@@ -925,7 +925,7 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     "The page renders quoted YouTube source cards from public video thumbnails and links, then builds a Three.js brainstorm map from the same public metadata so a planner can explore categories, source videos, and channel context before exporting the brief.",
     "",
     "Planning use case:",
-    "The dashboard supports learning-content planning by turning a selected public source list into a category brief, evidence table, transparency trail, and exportable observation report."
+    "The dashboard supports category-backed research by turning a selected public source list into a category brief, evidence table, transparency trail, and exportable observation report."
   ].join("\n");
 }
 

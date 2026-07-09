@@ -1,6 +1,6 @@
 # Offering Insights
 
-This is a static prototype for Offering Insights, a learning-content research workspace that turns selected public YouTube videos into category briefs, source evidence, and a Three.js brainstorm map.
+This is a static prototype for Offering Insights, a category-backed research workspace that turns selected public YouTube videos into category briefs, source evidence, and a Three.js brainstorm map.
 
 Pages:
 
@@ -28,7 +28,7 @@ Recommended recording flow:
 3. Paste the YouTube Data API key into the browser-only API key field.
 4. Keep the selected public video IDs or paste other public video URLs selected outside the API.
 5. Click `Analyze selected videos`.
-6. Show the learning brief, quoted YouTube source cards, Three.js brainstorm map, source evidence table, category observations, channel context, adjacent uploads, transparency trail, generated report, and download action.
+6. Show the research brief, quoted YouTube source cards, Three.js brainstorm map, source evidence table, category observations, channel context, adjacent uploads, transparency trail, generated report, and download action.
 7. State that the workflow uses selected public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 ## GitHub Pages publishing notes

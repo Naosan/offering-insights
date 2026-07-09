@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Workspace - Offering Insights</title>
-    <meta name="description" content="Offering Insights turns selected public YouTube videos into learning-content briefs and brainstorm maps.">
+    <meta name="description" content="Offering Insights turns selected public YouTube videos into category-backed research briefs and brainstorm maps.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260709-learning-workspace">
+    <link rel="stylesheet" href="styles.css?v=20260709-category-research">
   </head>
   <body>
     <header class="site-header">
@@ -38,28 +38,28 @@
       <section class="dashboard">
         <div class="dashboard-top">
           <div>
-            <p class="eyebrow">AI learning video planning workspace</p>
-            <h1>Find the strongest learning angle in a YouTube video set</h1>
+            <p class="eyebrow">Public video research workspace</p>
+            <h1>Turn selected YouTube videos into category-backed research briefs</h1>
             <p class="dashboard-subtitle">
-              Paste public videos you already trust. Offering Insights reads category, channel, thumbnail, and nearby upload context, then turns the set into a planning brief and brainstorm map.
+              Paste public videos you already selected. Offering Insights reads category, channel, thumbnail, and nearby upload context, then turns the set into a research brief and brainstorm map.
             </p>
           </div>
           <div class="status-strip" aria-label="API status">
             <span>Designed for</span>
-            <strong>learning content research</strong>
+            <strong>category observations</strong>
           </div>
         </div>
 
         <section class="panel brief-panel" aria-labelledby="workflow-title">
           <div class="panel-heading">
-            <h2 id="workflow-title">From video set to learning brief</h2>
+            <h2 id="workflow-title">From video set to research brief</h2>
             <span>Actual user workflow</span>
           </div>
           <div class="brief-grid">
             <article>
               <span>1. Collect</span>
-              <strong>Start with a small set of public learning videos.</strong>
-              <p>Use YouTube IDs or URLs from videos you are already considering for a course, article, playlist, or research note.</p>
+              <strong>Start with a small set of selected public videos.</strong>
+              <p>Use YouTube IDs or URLs from videos you are already considering for an article, report, playlist, or category research note.</p>
             </article>
             <article>
               <span>2. Understand</span>
@@ -69,7 +69,7 @@
             <article>
               <span>3. Create</span>
               <strong>Turn the evidence into a useful next step.</strong>
-              <p>Export a concise brief, inspect cited video cards, and use the interactive map to brainstorm the learning angle.</p>
+              <p>Export a concise brief, inspect cited video cards, and use the interactive map to brainstorm the strongest research angle.</p>
             </article>
           </div>
         </section>
@@ -83,12 +83,12 @@
             <div class="setup-grid">
               <label class="field">
                 <span>Brief name</span>
-                <input id="brief-title" type="text" spellcheck="false" value="AI learning video angle brief">
+                <input id="brief-title" type="text" spellcheck="false" value="Selected public video category brief">
               </label>
               <label class="field">
                 <span>Use case</span>
                 <select id="brief-audience">
-                  <option value="learning brief">Learning brief</option>
+                  <option value="category research">Category research</option>
                   <option value="editorial planning">Editorial planning</option>
                   <option value="research notes">Research notes</option>
                   <option value="content curation">Content curation</option>
@@ -104,7 +104,7 @@
               </label>
               <label class="field wide">
                 <span>Decision question</span>
-                <input id="decision-question" type="text" spellcheck="false" value="Which learning angle and evidence should this video set support?">
+                <input id="decision-question" type="text" spellcheck="false" value="Which category angle and evidence should this video set support?">
               </label>
             </div>
           </div>
@@ -162,14 +162,14 @@
         <div class="dashboard-grid">
           <section class="panel wide-panel service-result-panel">
             <div class="panel-heading">
-              <h2 id="decision-brief-title">Learning brief result</h2>
+              <h2 id="decision-brief-title">Research brief result</h2>
               <span id="brief-mode">Sample deliverable</span>
             </div>
             <div class="brief-result" id="brief-result">
               <article>
                 <span>Primary category</span>
                 <strong>Waiting for video analysis</strong>
-                <p>Analyze the selected videos to create an evidence-backed learning brief.</p>
+                <p>Analyze the selected videos to create an evidence-backed research brief.</p>
               </article>
               <article>
                 <span>Service output</span>
@@ -179,7 +179,7 @@
               <article>
                 <span>Next action</span>
                 <strong>Export planning note</strong>
-                <p>Copy the generated report for curriculum, editorial, or research planning notes.</p>
+                <p>Copy the generated report for editorial planning, market notes, or category research.</p>
               </article>
             </div>
           </section>
@@ -192,7 +192,7 @@
             <div class="video-source-layout">
               <div class="featured-video" id="featured-video">
                 <strong>Analyze videos to load a featured YouTube source.</strong>
-                <p>Offering Insights shows public videos as cited sources for the generated learning brief.</p>
+                <p>Offering Insights shows public videos as cited sources for the generated research brief.</p>
               </div>
               <div class="video-gallery" id="video-gallery">
                 <article>
@@ -335,10 +335,10 @@
     </main>
 
     <footer class="site-footer">
-      <span>Offering Insights helps turn public YouTube video sets into learning briefs.</span>
+      <span>Offering Insights helps turn public YouTube video sets into category-backed research briefs.</span>
       <span><a href="privacy.html">Privacy</a></span>
     </footer>
 
-    <script src="script.js?v=20260709-learning-workspace-2"></script>
+    <script src="script.js?v=20260709-category-research"></script>
   </body>
 </html>
