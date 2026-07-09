@@ -522,6 +522,42 @@ h3 {
   line-height: 1.58;
 }
 
+.brief-result {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  padding: 18px;
+}
+
+.brief-result article {
+  padding: 16px;
+  border: 1px solid #cbd7e3;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbff 100%);
+}
+
+.brief-result span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.brief-result strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.brief-result p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
 .metric {
   padding: 16px;
 }
@@ -788,6 +824,7 @@ td {
 .endpoint-list strong,
 .endpoint-list span {
   display: block;
+  overflow-wrap: anywhere;
 }
 
 .endpoint-list strong {
@@ -802,6 +839,8 @@ td {
 .endpoint-log li {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--line);
+  font-size: 13px;
+  line-height: 1.45;
 }
 
 .endpoint-log li:last-child {
@@ -888,7 +927,8 @@ td {
   .endpoint-grid,
   .workflow-grid,
   .metrics-grid,
-  .brief-grid {
+  .brief-grid,
+  .brief-result {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -913,7 +953,8 @@ td {
   .workflow-grid,
   .endpoint-grid,
   .metrics-grid,
-  .brief-grid {
+  .brief-grid,
+  .brief-result {
     grid-template-columns: 1fr;
   }
 

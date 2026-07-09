@@ -25,48 +25,48 @@
     <main class="app-shell">
       <aside class="sidebar" aria-label="Dashboard navigation">
         <div class="sidebar-title">Offering Insights</div>
-        <button class="nav-button active" type="button">Review brief</button>
-        <button class="nav-button" type="button">Live API run</button>
-        <button class="nav-button" type="button">Category observations</button>
+        <button class="nav-button active" type="button">Brief builder</button>
+        <button class="nav-button" type="button">Source input</button>
+        <button class="nav-button" type="button">Category evidence</button>
         <button class="nav-button" type="button">Evidence log</button>
-        <button class="nav-button" type="button">Report output</button>
+        <button class="nav-button" type="button">Export brief</button>
       </aside>
 
       <section class="dashboard">
         <div class="dashboard-top">
           <div>
-            <p class="eyebrow">Prototype review workflow</p>
-            <h1>Category-specific public video reporting</h1>
+            <p class="eyebrow">Live API-powered brief builder</p>
+            <h1>Build category briefs from selected YouTube videos</h1>
             <p class="dashboard-subtitle">
-              Turns operator-selected public YouTube video IDs into category-specific observations and a short reporting note.
+              Paste known public video URLs, fetch read-only YouTube metadata, and generate a category-specific brief with source evidence.
             </p>
           </div>
           <div class="status-strip" aria-label="API status">
-            <span>Method boundary</span>
-            <strong>No OAuth or search.list</strong>
+            <span>Data boundary</span>
+            <strong>Public metadata only</strong>
           </div>
         </div>
 
         <section class="panel brief-panel" aria-labelledby="review-brief-title">
           <div class="panel-heading">
-            <h2 id="review-brief-title">Review brief</h2>
-            <span>Category-specific reporting</span>
+            <h2 id="review-brief-title">What the service does</h2>
+            <span>No OAuth or search.list</span>
           </div>
           <div class="brief-grid">
             <article>
-              <span>Review question</span>
-              <strong>How do selected public videos compare across YouTube categories?</strong>
-              <p>Compare a small, operator-selected cohort of videos and identify category, channel, and engagement signals for editorial planning.</p>
+              <span>1. Source set</span>
+              <strong>Start with videos the operator already selected.</strong>
+              <p>The service does not discover videos by keyword. It accepts known public YouTube IDs or URLs as the review source set.</p>
             </article>
             <article>
-              <span>Input boundary</span>
-              <strong>Operator-selected public video IDs, not keyword search.</strong>
-              <p>The operator supplies known public video IDs or URLs. The prototype does not call `youtube.search.list` and does not collect private user data.</p>
+              <span>2. API evidence</span>
+              <strong>Use read-only metadata to explain the source set.</strong>
+              <p>The browser calls video, category, channel, and playlist item endpoints, then records the endpoint trail beside the results.</p>
             </article>
             <article>
-              <span>Report output</span>
-              <strong>Reusable observation note for review work.</strong>
-              <p>The dashboard groups videos by category, adds public channel context, samples public playlist membership, and drafts a compact report.</p>
+              <span>3. Deliverable</span>
+              <strong>Return a category brief that can be exported.</strong>
+              <p>The output summarizes category concentration, public channel context, adjacent upload context, and a concise observation note.</p>
             </article>
           </div>
         </section>
@@ -84,7 +84,7 @@
               </label>
               <label class="field wide">
                 <span>Selected public video IDs or URLs</span>
-                <textarea id="video-ids" rows="3" spellcheck="false">aircAruvnKk, Ks-_Mh1QhMc, 5MgBikgcWnY, wupToqz1e2g</textarea>
+                <textarea id="video-ids" rows="3" spellcheck="false">aircAruvnKk, IHZwWFHWa-w, Ks-_Mh1QhMc, wupToqz1e2g</textarea>
               </label>
             </div>
             <div class="action-row">
@@ -96,7 +96,7 @@
               The key is used only in this browser session to call Google API endpoints directly. It is not stored by this static site and is not sent to an Offering Insights server.
             </p>
             <div class="api-state" id="api-state" role="status" aria-live="polite">
-              Ready. Enter an API key and run the selected public video review for the screencast.
+              Ready. Enter an API key and build a category brief from the selected public videos.
             </div>
           </div>
         </section>
@@ -121,6 +121,30 @@
         </div>
 
         <div class="dashboard-grid">
+          <section class="panel wide-panel service-result-panel">
+            <div class="panel-heading">
+              <h2>Brief result</h2>
+              <span id="brief-mode">Sample deliverable</span>
+            </div>
+            <div class="brief-result" id="brief-result">
+              <article>
+                <span>Primary category</span>
+                <strong>Waiting for source review</strong>
+                <p>Run the live API review to create an evidence-backed category brief.</p>
+              </article>
+              <article>
+                <span>Service output</span>
+                <strong>Category brief with audit trail</strong>
+                <p>The brief is generated from public YouTube metadata and includes the API methods used.</p>
+              </article>
+              <article>
+                <span>Next action</span>
+                <strong>Export review note</strong>
+                <p>Copy the generated report for the YouTube API Services review response or internal notes.</p>
+              </article>
+            </div>
+          </section>
+
           <section class="panel wide-panel">
             <div class="panel-heading">
               <h2>Category observations</h2>

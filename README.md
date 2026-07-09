@@ -5,7 +5,7 @@ This is a temporary static website for the Offering Insights YouTube Data API Se
 Pages:
 
 - `index.html` - public overview and API usage summary
-- `app.html` - live browser-only API demo dashboard for review screenshots and screencasts
+- `app.html` - live browser-only category brief builder for review screenshots and screencasts
 - `privacy.html` - privacy policy
 - `terms.html` - terms of service
 
@@ -27,7 +27,7 @@ Recommended recording flow:
 2. Paste the YouTube Data API key into the browser-only API key field.
 3. Keep the selected public video IDs or paste other public video URLs selected outside the API.
 4. Click `Run live API review`.
-5. Show the category observations, channel context, playlist review, endpoint audit trail, and generated report.
+5. Show the generated brief result, category observations, channel context, playlist review, endpoint audit trail, and generated report.
 6. State that the demo uses public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 ## GitHub Pages publishing notes

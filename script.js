@@ -99,6 +99,8 @@ const elements = {
   metricChannels: document.getElementById("metric-channels"),
   metricQuota: document.getElementById("metric-quota"),
   metricEndpoint: document.getElementById("metric-endpoint"),
+  briefMode: document.getElementById("brief-mode"),
+  briefResult: document.getElementById("brief-result"),
   categoryLabel: document.getElementById("category-label"),
   videoTable: document.getElementById("video-table"),
   channelList: document.getElementById("channel-list"),
@@ -340,6 +342,8 @@ function renderReview(review) {
   elements.metricQuota.textContent = formatNumber(quotaEstimate);
   elements.metricEndpoint.textContent = "videos.list";
   elements.categoryLabel.textContent = review.source === "live" ? "Live API results" : "Sample data";
+  elements.briefMode.textContent = review.source === "live" ? "Live API deliverable" : "Sample deliverable";
+  renderBriefResult(review, categorySummaries, quotaEstimate);
 
   elements.videoTable.innerHTML = categorySummaries.map(summary => `
     <tr>
@@ -393,6 +397,61 @@ function renderReview(review) {
   elements.reportOutput.textContent = buildReport(review, categorySummaries, quotaEstimate);
 }
 
+function renderBriefResult(review, categorySummaries, quotaEstimate) {
+  const primary = categorySummaries[0];
+  const categoryCount = categorySummaries.length;
+  const videoCount = review.videos.length;
+  const channelCount = review.channels.length;
+  const endpointCount = review.endpointLog.length;
+
+  if (!primary) {
+    elements.briefResult.innerHTML = `
+      <article>
+        <span>Primary category</span>
+        <strong>Waiting for source review</strong>
+        <p>Run the live API review to create an evidence-backed category brief.</p>
+      </article>
+      <article>
+        <span>Service output</span>
+        <strong>Category brief with audit trail</strong>
+        <p>The brief is generated from public YouTube metadata and includes the API methods used.</p>
+      </article>
+      <article>
+        <span>Next action</span>
+        <strong>Export review note</strong>
+        <p>Copy the generated report for the YouTube API Services review response or internal notes.</p>
+      </article>
+    `;
+    return;
+  }
+
+  const concentration = Math.round((primary.count / Math.max(videoCount, 1)) * 100);
+  const topChannel = review.channels
+    .slice()
+    .sort((a, b) => b.subscriberCount - a.subscriberCount)[0];
+  const playlistNote = review.playlistItems.length
+    ? `${review.playlistItems.length} public playlist item${review.playlistItems.length === 1 ? "" : "s"} sampled from the first channel.`
+    : "No public playlist items were returned for the sampled channel.";
+
+  elements.briefResult.innerHTML = `
+    <article>
+      <span>Primary category</span>
+      <strong>${escapeHtml(primary.categoryName)} leads this source set.</strong>
+      <p>${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos fall in this category, representing ${formatNumber(concentration)}% of the current cohort.</p>
+    </article>
+    <article>
+      <span>Coverage evidence</span>
+      <strong>${formatNumber(categoryCount)} categories and ${formatNumber(channelCount)} public channels reviewed.</strong>
+      <p>Top public channel context: ${escapeHtml(topChannel?.title || "No channel returned")}. ${escapeHtml(playlistNote)}</p>
+    </article>
+    <article>
+      <span>Exportable output</span>
+      <strong>Brief generated with ${formatNumber(quotaEstimate)} estimated quota units.</strong>
+      <p>The report below cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"} and keeps the boundary to public metadata.</p>
+    </article>
+  `;
+}
+
 function buildReport(review, categorySummaries, quotaEstimate) {
   const mode = review.source === "live" ? "Live YouTube Data API run" : "Sample data demonstration";
   const categoryLines = categorySummaries.map(summary => (
@@ -404,6 +463,7 @@ function buildReport(review, categorySummaries, quotaEstimate) {
 
   return [
     "Offering Insights category-specific observation report",
+    "Service outcome: Build a category brief from operator-selected public YouTube videos.",
     "Review question: How do selected public videos compare across YouTube categories, and which public channel signals help explain that distribution?",
     `Mode: ${mode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
