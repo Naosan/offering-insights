@@ -414,6 +414,24 @@ h3 {
   color: #fff;
 }
 
+@media (min-width: 981px) {
+  .app-shell {
+    background: linear-gradient(to right, #141e28 0 248px, #eef2f5 248px);
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 71px;
+    align-self: start;
+    height: calc(100vh - 71px);
+    overflow-y: auto;
+  }
+
+  .dashboard {
+    background: #eef2f5;
+  }
+}
+
 .sidebar-title {
   margin-bottom: 16px;
   color: #b9c6d2;
@@ -1335,6 +1353,10 @@ td {
 }
 
 @media (max-width: 660px) {
+  [id] {
+    scroll-margin-top: 128px;
+  }
+
   .site-header,
   .site-footer {
     align-items: flex-start;

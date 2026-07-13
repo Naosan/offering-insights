@@ -6,7 +6,7 @@
     <title>Workspace - Offering Insights</title>
     <meta name="description" content="Offering Insights turns selected public YouTube videos into source-backed planning briefs and evidence maps.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260713-compliance-audit">
+  <link rel="stylesheet" href="styles.css?v=20260713-managed-api-v3">
   </head>
   <body>
     <header class="site-header">
@@ -127,8 +127,8 @@
               <span>I understand that this prototype uses YouTube API Services to read public YouTube metadata for the selected source set, and I agree to the <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms</a>.</span>
             </label>
             <div class="credential-boundary">
-              <strong>Review-session boundary</strong>
-              <span>In this static review build, the developer activates the project credential before a visitor-flow demonstration. Visitors provide public YouTube URLs only and never receive an API key. A production public release would keep the credential in a managed server component.</span>
+              <strong>Managed API connection</strong>
+              <span>Offering Insights sends only the selected public IDs and category region to its managed service. The service makes the approved read-only YouTube Data API requests; the project credential is never entered into or returned to this browser.</span>
             </div>
             <div class="action-row">
               <button class="button primary action-button" id="run-live" type="button">Analyze public videos</button>
@@ -136,27 +136,6 @@
             <div class="api-state" id="api-state" role="status" aria-live="polite">
               Ready. Add public YouTube URLs to run a live metadata analysis.
             </div>
-            <details class="developer-setup" id="developer-setup">
-              <summary>Developer review setup</summary>
-              <div class="developer-setup-body">
-                <p>
-                  This static review build lets the project owner activate one existing project API key for the current page session. The key is not generated for a visitor or for an analysis request, is not saved by this site, and is sent to Google over HTTPS in a request header rather than the request URL.
-                </p>
-                <div class="developer-setup-grid">
-                  <label class="field">
-                    <span>Project YouTube Data API key</span>
-                    <input id="api-key" type="password" autocomplete="off" spellcheck="false" placeholder="Enter the existing project key once">
-                  </label>
-                  <div class="credential-status" id="credential-status" role="status">
-                    Project credential is not active in this page session.
-                  </div>
-                </div>
-                <div class="action-row">
-                  <button class="button secondary action-button" id="save-key" type="button">Enable live analysis</button>
-                  <button class="button quiet action-button" id="clear-key" type="button">Remove session key</button>
-                </div>
-              </div>
-            </details>
           </div>
         </section>
 
@@ -393,6 +372,6 @@
       <span><a href="privacy.html">Privacy</a></span>
     </footer>
 
-    <script src="script.js?v=20260713-public-flow"></script>
+  <script src="script.js?v=20260713-managed-api-v5"></script>
   </body>
 </html>

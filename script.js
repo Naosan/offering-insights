@@ -1,23 +1,15 @@
-const YOUTUBE_API_BASE = "https://www.googleapis.com/youtube/v3";
-
-const endpointCosts = {
-  "youtube.videoCategories.list": 1,
-  "youtube.videos.list": 1,
-  "youtube.channels.list": 1,
-  "youtube.playlistItems.list": 1
-};
+const MANAGED_SERVICE_ORIGIN = "https://offering-insights-141682939002.asia-northeast1.run.app";
+const ANALYZE_API_URL = window.location.hostname === "naosan.github.io"
+  ? `${MANAGED_SERVICE_ORIGIN}/api/analyze`
+  : "/api/analyze";
 
 const elements = {
-  apiKey: document.getElementById("api-key"),
-  saveKey: document.getElementById("save-key"),
   briefTitle: document.getElementById("brief-title"),
   briefAudience: document.getElementById("brief-audience"),
   regionCode: document.getElementById("region-code"),
   decisionQuestion: document.getElementById("decision-question"),
   videoIds: document.getElementById("video-ids"),
   runLive: document.getElementById("run-live"),
-  clearKey: document.getElementById("clear-key"),
-  credentialStatus: document.getElementById("credential-status"),
   termsConsent: document.getElementById("terms-consent"),
   apiState: document.getElementById("api-state"),
   metricVideos: document.getElementById("metric-videos"),
@@ -46,8 +38,6 @@ const elements = {
   analysisOutputs: document.querySelectorAll(".analysis-output"),
   analysisNavButtons: document.querySelectorAll(".nav-button[data-requires-analysis]")
 };
-
-let sessionApiKey = "";
 
 function getBriefConfig() {
   return {
@@ -84,8 +74,27 @@ function escapeHtml(value) {
 }
 
 function extractVideoIds(raw) {
-  const matches = String(raw || "").match(/[A-Za-z0-9_-]{11}/g) || [];
-  return [...new Set(matches)].slice(0, 20);
+  const text = String(raw || "");
+  const ids = [];
+  const urlPatterns = [
+    /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:embed\/|shorts\/|live\/))([A-Za-z0-9_-]{11})/gi,
+    /[?&]v=([A-Za-z0-9_-]{11})(?:[&#,\s]|$)/gi
+  ];
+
+  urlPatterns.forEach(pattern => {
+    let match = pattern.exec(text);
+    while (match) {
+      ids.push(match[1]);
+      match = pattern.exec(text);
+    }
+  });
+
+  text.split(/[\s,]+/).forEach(token => {
+    const candidate = token.trim().replace(/^["'(<[]+|["')>\].;]+$/g, "");
+    if (/^[A-Za-z0-9_-]{11}$/.test(candidate)) ids.push(candidate);
+  });
+
+  return [...new Set(ids)].slice(0, 20);
 }
 
 function extractPlaylistIds(raw) {
@@ -102,95 +111,14 @@ function extractPlaylistIds(raw) {
   return [...new Set([...ids, ...directMatches])].slice(0, 3);
 }
 
-function buildApiUrl(path, params) {
-  const url = new URL(`${YOUTUBE_API_BASE}/${path}`);
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      url.searchParams.set(key, value);
-    }
-  });
-  return url;
-}
-
-async function requestYouTube(endpointName, path, params, endpointLog) {
-  const { key: apiKey, ...safeParams } = params;
-  const url = buildApiUrl(path, safeParams);
-
-  const response = await fetch(url, {
-    headers: apiKey ? { "X-Goog-Api-Key": apiKey } : {}
-  });
-  if (!response.ok) {
-    let message = `${endpointName} returned HTTP ${response.status}`;
-    try {
-      const errorPayload = await response.json();
-      message = errorPayload?.error?.message || message;
-    } catch {
-      // Keep the HTTP-level message when the body is not JSON.
-    }
-    throw new Error(message);
-  }
-
-  endpointLog.push({
-    name: endpointName,
-    detail: Object.entries(safeParams).map(([key, value]) => `${key}=${value}`).join(", "),
-    cost: endpointCosts[endpointName] || 0
-  });
-
-  return response.json();
-}
-
-function normalizeVideo(item, categoryMap) {
-  const thumbnails = item.snippet?.thumbnails || {};
-  return {
-    id: item.id,
-    title: item.snippet?.title || "Untitled video",
-    channelId: item.snippet?.channelId || "",
-    channelTitle: item.snippet?.channelTitle || "Unknown channel",
-    categoryId: item.snippet?.categoryId || "",
-    categoryName: categoryMap[item.snippet?.categoryId] || `Category ${item.snippet?.categoryId || "unknown"}`,
-    publishedAt: item.snippet?.publishedAt || "",
-    viewCount: Number(item.statistics?.viewCount || 0),
-    likeCount: Number(item.statistics?.likeCount || 0),
-    commentCount: Number(item.statistics?.commentCount || 0),
-    privacyStatus: item.status?.privacyStatus || "unknown",
-    thumbnailUrl: thumbnails.maxres?.url || thumbnails.high?.url || thumbnails.medium?.url || thumbnails.default?.url || ""
-  };
-}
-
-function normalizeChannel(item) {
-  return {
-    id: item.id,
-    title: item.snippet?.title || "Unknown channel",
-    description: item.snippet?.description || "",
-    subscriberCount: Number(item.statistics?.subscriberCount || 0),
-    videoCount: Number(item.statistics?.videoCount || 0),
-    viewCount: Number(item.statistics?.viewCount || 0)
-  };
-}
-
-function normalizePlaylistItem(item) {
-  return {
-    title: item.snippet?.title || "Untitled playlist item",
-    videoId: item.contentDetails?.videoId || item.snippet?.resourceId?.videoId || "",
-    channelTitle: item.snippet?.videoOwnerChannelTitle || item.snippet?.channelTitle || "Unknown channel",
-    publishedAt: item.snippet?.publishedAt || ""
-  };
-}
-
 async function runLiveReview() {
-  const apiKey = sessionApiKey;
-  let videoIds = extractVideoIds(elements.videoIds.value);
+  const videoIds = extractVideoIds(elements.videoIds.value);
   const playlistIds = extractPlaylistIds(elements.videoIds.value);
   const config = getBriefConfig();
   setActiveNavByTarget("live-api-title");
 
   if (elements.termsConsent && !elements.termsConsent.checked) {
     setStatus("Review and accept the Privacy Policy and Terms before running a live YouTube API analysis.", "warning");
-    return;
-  }
-
-  if (!apiKey) {
-    setStatus("Live API access has not been enabled by the project owner. Open Developer review setup to activate the existing project credential.", "warning");
     return;
   }
 
@@ -202,71 +130,24 @@ async function runLiveReview() {
   elements.runLive.disabled = true;
   setStatus("Reading public YouTube metadata for the selected source set...", "neutral");
 
-  const endpointLog = [];
-  let playlistItems = [];
-
   try {
-    if (playlistIds.length) {
-      const playlistPayloads = await Promise.all(playlistIds.map(playlistId => requestYouTube(
-        "youtube.playlistItems.list",
-        "playlistItems",
-        { part: "snippet,contentDetails", playlistId, maxResults: "20", key: apiKey },
-        endpointLog
-      )));
-      playlistItems = playlistPayloads.flatMap(payload => (payload.items || []).map(normalizePlaylistItem));
-      const playlistVideoIds = playlistItems.map(item => item.videoId).filter(Boolean);
-      videoIds = [...new Set([...videoIds, ...playlistVideoIds])].slice(0, 20);
+    const response = await fetch(ANALYZE_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoIds, playlistIds, regionCode: config.regionCode })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(payload.error || `Analysis service returned HTTP ${response.status}.`);
     }
-
-    if (!videoIds.length) {
-      throw new Error("The supplied playlist did not return any public video IDs to analyze.");
-    }
-
-    const categoriesPayload = await requestYouTube(
-      "youtube.videoCategories.list",
-      "videoCategories",
-      { part: "snippet", regionCode: config.regionCode, key: apiKey },
-      endpointLog
-    );
-    const categoryMap = Object.fromEntries(
-      (categoriesPayload.items || []).map(item => [item.id, item.snippet?.title || `Category ${item.id}`])
-    );
-
-    const videosPayload = await requestYouTube(
-      "youtube.videos.list",
-      "videos",
-      { part: "snippet,statistics,contentDetails,status", id: videoIds.join(","), key: apiKey },
-      endpointLog
-    );
-    const returnedVideos = (videosPayload.items || []).map(item => normalizeVideo(item, categoryMap));
-    const videos = returnedVideos.filter(video => video.privacyStatus === "public");
-    const excludedVideoCount = returnedVideos.length - videos.length;
-
-    if (!videos.length) {
-      throw new Error("No public video metadata was returned for the supplied IDs.");
-    }
-
-    const channelIds = [...new Set(videos.map(video => video.channelId).filter(Boolean))];
-    const channelsPayload = await requestYouTube(
-      "youtube.channels.list",
-      "channels",
-      { part: "snippet,statistics", id: channelIds.join(","), key: apiKey },
-      endpointLog
-    );
-    const channels = (channelsPayload.items || []).map(normalizeChannel);
 
     renderReview({
       source: "live",
       config,
-      videos,
-      channels,
-      playlistItems,
-      endpointLog,
-      excludedVideoCount,
-      fetchedAt: new Date().toISOString()
+      ...payload
     });
-    const exclusionNote = excludedVideoCount
-      ? ` ${formatNumber(excludedVideoCount)} non-public source${excludedVideoCount === 1 ? " was" : "s were"} excluded.`
+    const exclusionNote = payload.excludedVideoCount
+      ? ` ${formatNumber(payload.excludedVideoCount)} non-public source${payload.excludedVideoCount === 1 ? " was" : "s were"} excluded.`
       : "";
     setStatus(`Live YouTube API analysis completed at ${formatTimestamp(new Date())}.${exclusionNote}`, "success");
   } catch (error) {
@@ -495,10 +376,12 @@ async function ensureMindmap() {
 
 function updateMindmap(review, categorySummaries, config) {
   mindmapState.data = { review, categorySummaries, config };
+  const videoLabel = review.videos.length === 1 ? "video" : "videos";
+  const categoryLabel = categorySummaries.length === 1 ? "category" : "categories";
   renderBrainstormDetail({
     type: "brief",
     label: config.title,
-    detail: `${review.videos.length} selected public videos across ${categorySummaries.length} categories.`
+    detail: `${review.videos.length} selected public ${videoLabel} across ${categorySummaries.length} ${categoryLabel}.`
   });
 
   ensureMindmap().then(() => {
@@ -561,9 +444,10 @@ function buildMindmapScene(review, categorySummaries, config) {
   const categoryRadius = 5.5;
   const videoRadius = 3.1;
   const channelRadius = 7.6;
-  const totalCategories = Math.max(categorySummaries.length, 1);
+  const visibleCategorySummaries = categorySummaries.slice(0, 6);
+  const totalCategories = Math.max(visibleCategorySummaries.length, 1);
 
-  categorySummaries.forEach((summary, index) => {
+  visibleCategorySummaries.forEach((summary, index) => {
     const angle = (index / totalCategories) * Math.PI * 2 - Math.PI / 2;
     const categoryPosition = new THREE.Vector3(
       Math.cos(angle) * categoryRadius,
@@ -581,8 +465,9 @@ function buildMindmapScene(review, categorySummaries, config) {
     });
     addMindmapLink(center.position, categoryNode.position, 0x9eb4c7);
 
-    summary.videos.forEach((video, videoIndex) => {
-      const offset = (videoIndex - (summary.videos.length - 1) / 2) * 0.78;
+    const visibleVideos = summary.videos.slice(0, 3);
+    visibleVideos.forEach((video, videoIndex) => {
+      const offset = (videoIndex - (visibleVideos.length - 1) / 2) * 1.12;
       const videoAngle = angle + offset;
       const videoPosition = new THREE.Vector3(
         categoryPosition.x + Math.cos(videoAngle) * videoRadius,
@@ -643,7 +528,7 @@ function addMindmapNode({ label, detail, type, position, color, scale, summary, 
   mindmapState.group.add(mesh);
   mindmapState.nodes.push(mesh);
 
-  const labelSprite = makeLabelSprite(label, color);
+  const labelSprite = makeLabelSprite(label, color, type);
   labelSprite.position.set(position.x, position.y - scale - 0.58, position.z);
   labelSprite.userData = { label, detail, type, summary, video, channel };
   mindmapState.group.add(labelSprite);
@@ -663,7 +548,7 @@ function addMindmapLink(start, end, color) {
   mindmapState.group.add(line);
 }
 
-function makeLabelSprite(text, color) {
+function makeLabelSprite(text, color, type) {
   const THREE = mindmapState.THREE;
   const canvas = document.createElement("canvas");
   canvas.width = 512;
@@ -685,7 +570,8 @@ function makeLabelSprite(text, color) {
   const texture = new THREE.CanvasTexture(canvas);
   const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
   const sprite = new THREE.Sprite(material);
-  sprite.scale.set(4.4, 1.1, 1);
+  const widths = { brief: 3.8, category: 3.5, video: 3.1, channel: 3.3 };
+  sprite.scale.set(widths[type] || 3.4, 0.94, 1);
   return sprite;
 }
 
@@ -765,8 +651,9 @@ function animateMindmap() {
   if (!mindmapState.renderer || !mindmapState.scene || !mindmapState.camera) return;
   mindmapState.animationFrame = requestAnimationFrame(animateMindmap);
   if (mindmapState.group) {
-    mindmapState.group.rotation.y += 0.0022;
-    mindmapState.group.rotation.x = Math.sin(Date.now() * 0.00025) * 0.08;
+    const motion = Date.now() * 0.00022;
+    mindmapState.group.rotation.y = Math.sin(motion) * 0.16;
+    mindmapState.group.rotation.x = Math.cos(motion * 0.72) * 0.055;
   }
   const THREE = mindmapState.THREE;
   if (THREE && !mindmapState.scene.userData.lit) {
@@ -811,6 +698,14 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
   const playlistNote = review.playlistItems.length
     ? `${review.playlistItems.length} public playlist item${review.playlistItems.length === 1 ? "" : "s"} included from user-provided playlist input.`
     : "No public playlist URL was included in this source set.";
+  const outsidePrimaryCount = Math.max(videoCount - primary.count, 0);
+  const otherCategories = categorySummaries.slice(1).map(summary => summary.categoryName);
+  const nextActionTitle = outsidePrimaryCount
+    ? `Review ${formatNumber(outsidePrimaryCount)} source${outsidePrimaryCount === 1 ? "" : "s"} outside ${primary.categoryName}.`
+    : `Confirm that ${primary.categoryName} matches the intended brief.`;
+  const nextActionDetail = outsidePrimaryCount
+    ? `The remaining source${outsidePrimaryCount === 1 ? " uses" : "s use"} ${otherCategories.join(", ")}. Decide whether that mix supports the question before exporting the note.`
+    : `All selected sources use the same YouTube category label. Check the cited videos, then export the note for ${config.audience}.`;
 
   elements.briefResult.innerHTML = `
     <article>
@@ -820,19 +715,21 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
     </article>
     <article>
       <span>Evidence</span>
-      <strong>${formatNumber(categoryCount)} categories and ${formatNumber(channelCount)} public channels compared.</strong>
+      <strong>${formatNumber(categoryCount)} ${categoryCount === 1 ? "category" : "categories"} and ${formatNumber(channelCount)} public ${channelCount === 1 ? "channel" : "channels"} compared.</strong>
       <p>Public channels returned: ${escapeHtml(channelNames.join(", ") || "No channel returned")}. ${escapeHtml(playlistNote)}</p>
     </article>
     <article>
       <span>Next action</span>
-      <strong>Copy or download the planning note.</strong>
-      <p>Use the brief for the question: ${escapeHtml(config.question)} It cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"} in the API trace.</p>
+      <strong>${escapeHtml(nextActionTitle)}</strong>
+      <p>${escapeHtml(nextActionDetail)} The evidence cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"}.</p>
     </article>
   `;
 }
 
 function buildReport(review, categorySummaries, quotaEstimate, config) {
   const mode = "Live YouTube Data API analysis";
+  const primary = categorySummaries[0];
+  const outsidePrimaryCount = primary ? Math.max(review.videos.length - primary.count, 0) : 0;
   const categoryLines = categorySummaries.map(summary => (
     `- ${summary.categoryName}: ${summary.count} selected source video(s), ${summary.channelCount} channel(s). First selected source in this category: "${summary.firstVideo.title}".`
   ));
@@ -861,6 +758,9 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     "",
     "Category summary for this selected source set:",
     ...categoryLines,
+    primary
+      ? `Category review action: ${outsidePrimaryCount ? `review ${outsidePrimaryCount} selected source(s) outside ${primary.categoryName}` : `confirm that ${primary.categoryName} matches the intended brief`} before export.`
+      : "",
     "",
     "Source evidence:",
     ...review.videos.map(video => (
@@ -963,25 +863,6 @@ function downloadReport() {
 }
 
 elements.runLive?.addEventListener("click", runLiveReview);
-elements.saveKey?.addEventListener("click", () => {
-  const candidate = elements.apiKey?.value.trim() || "";
-  if (!candidate) {
-    setStatus("Enter the existing project API key before enabling live analysis.", "warning");
-    return;
-  }
-  sessionApiKey = candidate;
-  elements.apiKey.value = "";
-  elements.credentialStatus.textContent = "Project credential is active for this page session.";
-  elements.credentialStatus.dataset.active = "true";
-  setStatus("Live API access is enabled for this page session. Public video URLs can now be analyzed without entering another key.", "success");
-});
-elements.clearKey?.addEventListener("click", () => {
-  sessionApiKey = "";
-  elements.apiKey.value = "";
-  elements.credentialStatus.textContent = "Project credential is not active in this page session.";
-  delete elements.credentialStatus.dataset.active;
-  setStatus("The project key was removed from this page session.", "neutral");
-});
 elements.copyReport?.addEventListener("click", copyReport);
 elements.downloadReport?.addEventListener("click", downloadReport);
 elements.navButtons.forEach(button => {

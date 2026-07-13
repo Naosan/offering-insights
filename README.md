@@ -1,19 +1,21 @@
 # Offering Insights
 
-This is a static prototype for Offering Insights, a public video source review workspace that turns selected public YouTube videos into source-backed planning briefs, evidence tables, category summaries, and a Three.js evidence map.
+Offering Insights is a public video source review workspace that turns selected public YouTube videos into source-backed planning briefs, evidence tables, category summaries, and a Three.js evidence map. Static product pages and the managed YouTube API endpoint are served by the same Node.js service.
 
 Pages:
 
 - `index.html` - public overview and product summary
-- `app.html` - public-video planning brief builder with separate developer review setup
+- `app.html` - public-video planning brief builder
 - `privacy.html` - privacy policy
 - `terms.html` - terms of service
+- `server.js` - bounded read-only YouTube API endpoint and static file server
 
 Suggested form URLs after publishing:
 
-- Main website / primary access URL: `https://<host>/`
-- Privacy policy URL: `https://<host>/privacy.html`
-- Terms URL: `https://<host>/terms.html`
+- Main website / primary access URL: `https://offering-insights-141682939002.asia-northeast1.run.app/`
+- Workspace URL: `https://offering-insights-141682939002.asia-northeast1.run.app/app.html`
+- Privacy policy URL: `https://offering-insights-141682939002.asia-northeast1.run.app/privacy.html`
+- Terms URL: `https://offering-insights-141682939002.asia-northeast1.run.app/terms.html`
 
 The site intentionally does not publish the applicant's home address.
 
@@ -23,19 +25,28 @@ Use `app.html` to show the service workflow from selected videos to an exported 
 
 Recommended recording flow:
 
-1. Open `https://naosan.github.io/offering-insights/app.html`.
+1. Open the deployed Offering Insights workspace.
 2. Set the brief name, use case, category region, and decision question.
-3. Open `Developer review setup` and activate the existing project API key once for the current developer-operated review session. The key remains in page memory and is sent to Google over HTTPS using the `x-goog-api-key` request header, not a URL query parameter. A production public release requires a managed server component so visitors never receive the project credential.
-4. Paste selected public video IDs, video URLs, or public playlist URLs into the public user input.
-5. Click `Analyze public videos`.
-6. Show the planning brief, quoted YouTube source cards, Three.js evidence map, source evidence table, category summary, channel context, optional public playlist context, API trace, generated report, and download action.
-7. State that the project key is not generated per visitor or per analysis and that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
+3. Paste selected public video IDs, video URLs, or public playlist URLs into the public user input.
+4. Click `Analyze public videos`. The browser sends only parsed public IDs and the category region to the managed endpoint; the API credential remains in server-side secret configuration.
+5. Show the planning brief, quoted YouTube source cards, Three.js evidence map, source evidence table, category summary, channel context, optional public playlist context, API trace, generated report, and download action.
+6. State that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 The public build intentionally has no fabricated YouTube sample results. Output is shown only after a live API request, so displayed YouTube titles, thumbnails, categories, channels, and statistics remain attributable to the current API response.
 
+## Local development
+
+Set `YOUTUBE_API_KEY` in the process environment, then run:
+
+```powershell
+npm start
+```
+
+Open `http://localhost:8080/`. Run `npm test` for the server boundary tests.
+
 ## GitHub Pages publishing notes
 
-This repository includes `.nojekyll` for GitHub Pages static hosting.
+This repository includes `.nojekyll` for the existing GitHub Pages overview. Live analysis requires the managed Node.js service.
 
 High-level publishing flow:
 

@@ -6,7 +6,7 @@
     <title>Privacy Policy - Offering Insights</title>
     <meta name="description" content="Privacy policy for Offering Insights.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260713-compliance-audit">
+    <link rel="stylesheet" href="styles.css?v=20260713-managed-api-v2">
   </head>
   <body>
     <header class="site-header">
@@ -23,10 +23,10 @@
     </header>
 
     <main class="document">
-      <p class="eyebrow">Effective date: July 7, 2026</p>
+      <p class="eyebrow">Effective date: July 13, 2026</p>
       <h1>Privacy Policy</h1>
       <p>
-        Offering Insights is a prototype video research dashboard. This policy explains how the service handles information in connection with its planned use of YouTube Data API Services.
+        Offering Insights is a prototype video research dashboard. This policy explains how the service handles information when using YouTube Data API Services.
       </p>
       <div class="doc-callout">
         <strong>Current prototype scope:</strong>
@@ -43,7 +43,7 @@
         The API client uses YouTube Data API Services to retrieve public metadata such as video titles, video IDs, channel IDs, category information, playlist item metadata, publication dates, and public statistics. The current version does not request Google OAuth access and does not access private YouTube account data.
       </p>
       <p>
-        Visitors provide public YouTube video IDs, video URLs, or public playlist URLs for analysis. The static review build includes a separate developer setup in which the project owner may activate one existing project API key before a visitor-flow demonstration in the current page session. The application does not generate an API key for each visitor or for each analysis request. The key is held only in page memory, is transmitted directly to Google API endpoints over HTTPS in a request header rather than the request URL, and is not persisted by this static website or transmitted to an Offering Insights server. A production public release would keep the project credential in a managed server component so visitors never enter, receive, or inspect it.
+        Visitors provide public YouTube video IDs, video URLs, or public playlist URLs for analysis. The browser sends the parsed public IDs and selected category region to the Offering Insights managed service. That service makes the approved read-only requests to YouTube Data API Services. The project API credential is stored in managed server configuration and is never entered into, returned to, or stored by the visitor's browser.
       </p>
       <p>
         Use of YouTube Data API Services is also governed by the <a href="https://www.youtube.com/t/terms" rel="noopener">YouTube Terms of Service</a>, the <a href="https://developers.google.com/youtube/terms/api-services-terms-of-service" rel="noopener">YouTube API Services Terms of Service</a>, and the <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a>.
@@ -51,12 +51,12 @@
 
       <h2>How we use information</h2>
       <p>
-        The public source IDs parsed from visitor-supplied URLs, the selected category region, and the required read-only request parameters are sent directly to Google API endpoints. Returned public YouTube metadata is used to organize the selected source set, compare public channel context, and prepare editorial, category, or research notes. We do not sell personal information. We do not use Google user data for advertising targeting. Human access to operational data is limited to maintenance, security, policy, or user support needs.
+        The public source IDs parsed from visitor-supplied URLs, the selected category region, and the required read-only request parameters are processed by the managed service and transmitted to Google API endpoints. Returned public YouTube metadata is sent to the current browser session to organize the selected source set, compare public channel context, and prepare editorial, category, or research notes. We do not sell personal information. We do not use Google user data for advertising targeting. Human access to operational data is limited to maintenance, security, policy, or user support needs.
       </p>
 
       <h2>Storage and deletion</h2>
       <p>
-        The static demo does not persist YouTube API response data. Live results remain in the current page session, and a report is saved locally only when the visitor chooses the copy or download action. If caching is added later, cached public API data will be limited to what is needed for product functionality and will be refreshed or deleted within the applicable YouTube policy period. Requests for deletion or correction can be sent to <a href="mailto:offeringinsights.contact@gmail.com">offeringinsights.contact@gmail.com</a>.
+        The current service does not persist YouTube API response data or visitor source lists in an application database. Live results remain in the current browser session, and a report is saved locally only when the visitor chooses the copy or download action. The managed service may retain short-lived operational logs needed for security, availability, and abuse prevention; those logs are not used to build user profiles. If caching is added later, cached public API data will be limited to what is needed for product functionality and will be refreshed or deleted within the applicable YouTube policy period. Requests for deletion or correction can be sent to <a href="mailto:offeringinsights.contact@gmail.com">offeringinsights.contact@gmail.com</a>.
       </p>
 
       <h2>Google account permissions</h2>

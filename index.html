@@ -6,7 +6,7 @@
     <title>Offering Insights</title>
     <meta name="description" content="Offering Insights turns selected public YouTube videos into source-backed planning briefs, evidence tables, and category summaries.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260713-compliance-audit">
+    <link rel="stylesheet" href="styles.css?v=20260713-managed-api-v2">
   </head>
   <body>
     <header class="site-header">
@@ -99,7 +99,7 @@
             <img src="assets/developed-with-youtube.png" alt="Developed with YouTube">
           </a>
         </div>
-        <div class="endpoint-grid" aria-label="Planned YouTube Data API endpoints">
+        <div class="endpoint-grid" aria-label="YouTube Data API endpoints used by the service">
           <article class="endpoint-card blue">
             <h3>youtube.videos.list</h3>
             <p>Retrieve public video metadata, statistics, category IDs, and publication details.</p>
@@ -124,11 +124,12 @@
           <p class="eyebrow">Data boundary</p>
           <h2>Designed for limited, understandable use</h2>
           <p>
-            The prototype uses approved API methods, avoids scraping, and keeps account access out of the first version.
+            The prototype uses approved API methods through a managed service, avoids scraping, and keeps account access out of the first version.
           </p>
         </div>
         <ul class="check-list">
           <li>Uses YouTube Data API Services endpoints instead of scraping.</li>
+          <li>Keeps the project API credential in managed server configuration, outside the visitor's browser.</li>
           <li>Does not require users to sign in with Google in the initial version.</li>
           <li>Provides a public privacy policy, terms page, and contact email.</li>
         </ul>

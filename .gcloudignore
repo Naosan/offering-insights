@@ -1,0 +1,12 @@
+.gcloudignore
+.git
+.gitignore
+.npm-cache
+.playwright-cli
+consultation_packets
+node_modules
+output
+submission_artifacts
+test
+youtube-api-review-context.md
+youtube-api-review-reply.md

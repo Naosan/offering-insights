@@ -1,4 +1,7 @@
 .npm-cache/
+.env
+.env.*
+node_modules/
 .playwright-cli/
 output/
 youtube-api-review-reply.md
