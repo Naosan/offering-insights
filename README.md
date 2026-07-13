@@ -5,7 +5,7 @@ This is a static prototype for Offering Insights, a public video source review w
 Pages:
 
 - `index.html` - public overview and product summary
-- `app.html` - live browser-only planning brief builder
+- `app.html` - public-video planning brief builder with separate developer review setup
 - `privacy.html` - privacy policy
 - `terms.html` - terms of service
 
@@ -25,11 +25,11 @@ Recommended recording flow:
 
 1. Open `https://naosan.github.io/offering-insights/app.html`.
 2. Set the brief name, use case, category region, and decision question.
-3. Paste the YouTube Data API key into the browser-only API key field.
-4. Keep the selected public video IDs or paste other public video / playlist URLs selected outside the API.
-5. Click `Analyze selected videos`.
+3. Open `Developer review setup` and activate the existing project API key once for the current page session.
+4. Paste selected public video IDs, video URLs, or public playlist URLs into the public user input.
+5. Click `Analyze public videos`.
 6. Show the planning brief, quoted YouTube source cards, Three.js evidence map, source evidence table, category summary, channel context, optional public playlist context, API trace, generated report, and download action.
-7. State that the workflow uses selected public metadata only and does not use OAuth, uploads, private user data, `search.list`, or `videos.insert`.
+7. State that the project key is not generated per visitor or per analysis and that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
 
 ## GitHub Pages publishing notes
 

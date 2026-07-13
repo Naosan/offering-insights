@@ -80,6 +80,7 @@ const sampleReview = {
 
 const elements = {
   apiKey: document.getElementById("api-key"),
+  saveKey: document.getElementById("save-key"),
   briefTitle: document.getElementById("brief-title"),
   briefAudience: document.getElementById("brief-audience"),
   regionCode: document.getElementById("region-code"),
@@ -88,6 +89,7 @@ const elements = {
   runLive: document.getElementById("run-live"),
   loadSample: document.getElementById("load-sample"),
   clearKey: document.getElementById("clear-key"),
+  credentialStatus: document.getElementById("credential-status"),
   termsConsent: document.getElementById("terms-consent"),
   apiState: document.getElementById("api-state"),
   metricVideos: document.getElementById("metric-videos"),
@@ -112,8 +114,12 @@ const elements = {
   copyReport: document.getElementById("copy-report"),
   downloadReport: document.getElementById("download-report"),
   copyStatus: document.getElementById("copy-status"),
-  navButtons: document.querySelectorAll(".nav-button[data-target]")
+  navButtons: document.querySelectorAll(".nav-button[data-target]"),
+  analysisOutputs: document.querySelectorAll(".analysis-output"),
+  analysisNavButtons: document.querySelectorAll(".nav-button[data-requires-analysis]")
 };
+
+let sessionApiKey = "";
 
 function getBriefConfig() {
   return {
@@ -242,7 +248,7 @@ function normalizePlaylistItem(item) {
 }
 
 async function runLiveReview() {
-  const apiKey = elements.apiKey.value.trim();
+  const apiKey = sessionApiKey;
   let videoIds = extractVideoIds(elements.videoIds.value);
   const playlistIds = extractPlaylistIds(elements.videoIds.value);
   const config = getBriefConfig();
@@ -254,7 +260,7 @@ async function runLiveReview() {
   }
 
   if (!apiKey) {
-    setStatus("Enter a YouTube Data API key before running the live analysis, or use the sample brief.", "warning");
+    setStatus("Live API access has not been enabled by the project owner. Open Developer review setup, or view the sample result.", "warning");
     return;
   }
 
@@ -322,11 +328,10 @@ async function runLiveReview() {
       endpointLog,
       fetchedAt: new Date().toISOString()
     });
-    setStatus(`Live YouTube API run completed at ${formatTimestamp(new Date())}. The API key field was cleared after the request.`, "success");
+    setStatus(`Live YouTube API analysis completed at ${formatTimestamp(new Date())}.`, "success");
   } catch (error) {
     setStatus(error.message, "error");
   } finally {
-    elements.apiKey.value = "";
     elements.runLive.disabled = false;
   }
 }
@@ -368,12 +373,19 @@ function renderReview(review) {
   const quotaEstimate = review.endpointLog.reduce((total, item) => total + (item.cost || 0), 0);
   const config = review.config || getBriefConfig();
 
+  elements.analysisOutputs.forEach(output => {
+    output.hidden = false;
+  });
+  elements.analysisNavButtons.forEach(button => {
+    button.disabled = false;
+  });
+
   elements.metricVideos.textContent = formatNumber(review.videos.length);
   elements.metricChannels.textContent = formatNumber(review.channels.length);
   elements.metricQuota.textContent = formatNumber(categorySummaries.length);
   elements.metricEndpoint.textContent = review.source === "live" ? "Live ready" : "Sample ready";
   elements.categoryLabel.textContent = review.source === "live" ? "Live video set" : "Sample video set";
-  elements.briefMode.textContent = review.source === "live" ? "Live API metadata" : "Sample fallback mode";
+  elements.briefMode.textContent = review.source === "live" ? "Live API metadata" : "Sample data";
   renderBriefResult(review, categorySummaries, quotaEstimate, config);
   renderVideoSources(review, categorySummaries);
   updateMindmap(review, categorySummaries, config);
@@ -903,7 +915,7 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     `Category region: ${config.regionCode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
     "Prototype boundary: this tool does not watch videos, transcribe audio, analyze captions, analyze comments, or access private account data.",
-    "Input method: selected public video IDs, video URLs, or public playlist URLs; no keyword discovery is required for this workflow.",
+    "Input method: public video IDs, video URLs, or public playlist URLs supplied by the user.",
     `Videos reviewed: ${review.videos.length}`,
     `Channels included: ${review.channels.length}`,
     `Estimated quota units for this analysis: ${quotaEstimate}`,
@@ -1018,11 +1030,26 @@ elements.runLive?.addEventListener("click", runLiveReview);
 elements.loadSample?.addEventListener("click", () => {
   setActiveNavByTarget("live-api-title");
   renderReview({ ...sampleReview, config: getBriefConfig() });
-  setStatus("Sample fallback mode loaded. Use live analysis with selected public sources when recording the review workflow.", "warning");
+  setStatus("Sample result loaded. It demonstrates the same source cards, category summary, evidence map, and exportable brief as a live analysis.", "neutral");
+});
+elements.saveKey?.addEventListener("click", () => {
+  const candidate = elements.apiKey?.value.trim() || "";
+  if (!candidate) {
+    setStatus("Enter the existing project API key before enabling live analysis.", "warning");
+    return;
+  }
+  sessionApiKey = candidate;
+  elements.apiKey.value = "";
+  elements.credentialStatus.textContent = "Project credential is active for this page session.";
+  elements.credentialStatus.dataset.active = "true";
+  setStatus("Live API access is enabled for this page session. Public video URLs can now be analyzed without entering another key.", "success");
 });
 elements.clearKey?.addEventListener("click", () => {
+  sessionApiKey = "";
   elements.apiKey.value = "";
-  setStatus("API key field cleared.", "neutral");
+  elements.credentialStatus.textContent = "Project credential is not active in this page session.";
+  delete elements.credentialStatus.dataset.active;
+  setStatus("The project key was removed from this page session.", "neutral");
 });
 elements.copyReport?.addEventListener("click", copyReport);
 elements.downloadReport?.addEventListener("click", downloadReport);
@@ -1032,5 +1059,4 @@ elements.navButtons.forEach(button => {
 window.addEventListener("scroll", queueActiveNavUpdate, { passive: true });
 window.addEventListener("resize", queueActiveNavUpdate);
 
-renderReview({ ...sampleReview, config: getBriefConfig() });
 updateActiveNav();
