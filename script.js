@@ -7,77 +7,6 @@ const endpointCosts = {
   "youtube.playlistItems.list": 1
 };
 
-const sampleReview = {
-  source: "sample",
-  videos: [
-    {
-      id: "aircAruvnKk",
-      title: "Sample explainer: neural network foundations",
-      channelTitle: "Public Math Explainer Channel",
-      categoryId: "27",
-      categoryName: "Education",
-      publishedAt: "2026-06-20T10:00:00Z",
-      viewCount: 23600000,
-      likeCount: 620000,
-      thumbnailUrl: "https://i.ytimg.com/vi/aircAruvnKk/hqdefault.jpg"
-    },
-    {
-      id: "IHZwWFHWa-w",
-      title: "Sample talk: how practice shapes performance",
-      channelTitle: "Public Conference Channel",
-      categoryId: "28",
-      categoryName: "Science & Technology",
-      publishedAt: "2026-06-22T08:30:00Z",
-      viewCount: 2200000,
-      likeCount: 58000,
-      thumbnailUrl: "https://i.ytimg.com/vi/IHZwWFHWa-w/hqdefault.jpg"
-    },
-    {
-      id: "Ks-_Mh1QhMc",
-      title: "Sample explainer: why complex systems are difficult to explain",
-      channelTitle: "Public Explainer Channel",
-      categoryId: "27",
-      categoryName: "Education",
-      publishedAt: "2026-06-25T13:45:00Z",
-      viewCount: 12300000,
-      likeCount: 410000,
-      thumbnailUrl: "https://i.ytimg.com/vi/Ks-_Mh1QhMc/hqdefault.jpg"
-    }
-  ],
-  channels: [
-    {
-      title: "Public Math Explainer Channel",
-      description: "Public channel metadata sample for source-backed planning.",
-      subscriberCount: 6700000,
-      videoCount: 180
-    },
-    {
-      title: "Public Conference Channel",
-      description: "Public channel metadata sample for technology and education coverage.",
-      subscriberCount: 25000000,
-      videoCount: 5200
-    }
-  ],
-  playlistItems: [],
-  endpointLog: [
-    {
-      name: "youtube.videoCategories.list",
-      detail: "Sample category labels used to separate Education from Science & Technology.",
-      cost: 1
-    },
-    {
-      name: "youtube.videos.list",
-      detail: "Sample public metadata for the selected video cohort.",
-      cost: 1
-    },
-    {
-      name: "youtube.channels.list",
-      detail: "Sample public channel context for cohort comparison.",
-      cost: 1
-    }
-  ]
-};
-
 const elements = {
   apiKey: document.getElementById("api-key"),
   saveKey: document.getElementById("save-key"),
@@ -87,7 +16,6 @@ const elements = {
   decisionQuestion: document.getElementById("decision-question"),
   videoIds: document.getElementById("video-ids"),
   runLive: document.getElementById("run-live"),
-  loadSample: document.getElementById("load-sample"),
   clearKey: document.getElementById("clear-key"),
   credentialStatus: document.getElementById("credential-status"),
   termsConsent: document.getElementById("terms-consent"),
@@ -185,11 +113,12 @@ function buildApiUrl(path, params) {
 }
 
 async function requestYouTube(endpointName, path, params, endpointLog) {
-  const url = buildApiUrl(path, params);
-  const safeParams = { ...params };
-  delete safeParams.key;
+  const { key: apiKey, ...safeParams } = params;
+  const url = buildApiUrl(path, safeParams);
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    headers: apiKey ? { "X-Goog-Api-Key": apiKey } : {}
+  });
   if (!response.ok) {
     let message = `${endpointName} returned HTTP ${response.status}`;
     try {
@@ -223,6 +152,7 @@ function normalizeVideo(item, categoryMap) {
     viewCount: Number(item.statistics?.viewCount || 0),
     likeCount: Number(item.statistics?.likeCount || 0),
     commentCount: Number(item.statistics?.commentCount || 0),
+    privacyStatus: item.status?.privacyStatus || "unknown",
     thumbnailUrl: thumbnails.maxres?.url || thumbnails.high?.url || thumbnails.medium?.url || thumbnails.default?.url || ""
   };
 }
@@ -260,7 +190,7 @@ async function runLiveReview() {
   }
 
   if (!apiKey) {
-    setStatus("Live API access has not been enabled by the project owner. Open Developer review setup, or view the sample result.", "warning");
+    setStatus("Live API access has not been enabled by the project owner. Open Developer review setup to activate the existing project credential.", "warning");
     return;
   }
 
@@ -288,6 +218,10 @@ async function runLiveReview() {
       videoIds = [...new Set([...videoIds, ...playlistVideoIds])].slice(0, 20);
     }
 
+    if (!videoIds.length) {
+      throw new Error("The supplied playlist did not return any public video IDs to analyze.");
+    }
+
     const categoriesPayload = await requestYouTube(
       "youtube.videoCategories.list",
       "videoCategories",
@@ -301,10 +235,12 @@ async function runLiveReview() {
     const videosPayload = await requestYouTube(
       "youtube.videos.list",
       "videos",
-      { part: "snippet,statistics,contentDetails", id: videoIds.join(","), key: apiKey },
+      { part: "snippet,statistics,contentDetails,status", id: videoIds.join(","), key: apiKey },
       endpointLog
     );
-    const videos = (videosPayload.items || []).map(item => normalizeVideo(item, categoryMap));
+    const returnedVideos = (videosPayload.items || []).map(item => normalizeVideo(item, categoryMap));
+    const videos = returnedVideos.filter(video => video.privacyStatus === "public");
+    const excludedVideoCount = returnedVideos.length - videos.length;
 
     if (!videos.length) {
       throw new Error("No public video metadata was returned for the supplied IDs.");
@@ -326,9 +262,13 @@ async function runLiveReview() {
       channels,
       playlistItems,
       endpointLog,
+      excludedVideoCount,
       fetchedAt: new Date().toISOString()
     });
-    setStatus(`Live YouTube API analysis completed at ${formatTimestamp(new Date())}.`, "success");
+    const exclusionNote = excludedVideoCount
+      ? ` ${formatNumber(excludedVideoCount)} non-public source${excludedVideoCount === 1 ? " was" : "s were"} excluded.`
+      : "";
+    setStatus(`Live YouTube API analysis completed at ${formatTimestamp(new Date())}.${exclusionNote}`, "success");
   } catch (error) {
     setStatus(error.message, "error");
   } finally {
@@ -343,29 +283,22 @@ function summarizeByCategory(videos) {
     const group = groups.get(video.categoryName) || {
       categoryName: video.categoryName,
       videos: [],
-      channels: new Set(),
-      views: 0,
-      likes: 0
+      channels: new Set()
     };
-    group.videos.push(video);
+    if (!group.videos.includes(video)) group.videos.push(video);
     group.channels.add(video.channelTitle);
-    group.views += video.viewCount;
-    group.likes += video.likeCount;
     groups.set(video.categoryName, group);
   });
 
   return [...groups.values()].map(group => {
-    const topVideo = [...group.videos].sort((a, b) => b.viewCount - a.viewCount)[0];
-    const averageViews = Math.round(group.views / Math.max(group.videos.length, 1));
     return {
       categoryName: group.categoryName,
       count: group.videos.length,
       channelCount: group.channels.size,
-      averageViews,
-      topVideo,
+      firstVideo: group.videos[0],
       videos: group.videos
     };
-  }).sort((a, b) => b.count - a.count || b.averageViews - a.averageViews);
+  }).sort((a, b) => b.count - a.count || a.categoryName.localeCompare(b.categoryName));
 }
 
 function renderReview(review) {
@@ -383,9 +316,9 @@ function renderReview(review) {
   elements.metricVideos.textContent = formatNumber(review.videos.length);
   elements.metricChannels.textContent = formatNumber(review.channels.length);
   elements.metricQuota.textContent = formatNumber(categorySummaries.length);
-  elements.metricEndpoint.textContent = review.source === "live" ? "Live ready" : "Sample ready";
-  elements.categoryLabel.textContent = review.source === "live" ? "Live video set" : "Sample video set";
-  elements.briefMode.textContent = review.source === "live" ? "Live API metadata" : "Sample data";
+  elements.metricEndpoint.textContent = "Live ready";
+  elements.categoryLabel.textContent = "Offering Insights live view";
+  elements.briefMode.textContent = "Live API metadata";
   renderBriefResult(review, categorySummaries, quotaEstimate, config);
   renderVideoSources(review, categorySummaries);
   updateMindmap(review, categorySummaries, config);
@@ -394,7 +327,7 @@ function renderReview(review) {
     <tr>
       <td>
         <strong>${escapeHtml(video.title)}</strong>
-        <div class="muted-line">${escapeHtml(video.id || "sample video")} - ${formatDate(video.publishedAt)}</div>
+        <div class="muted-line">${escapeHtml(video.id || "unknown video")} - ${formatDate(video.publishedAt)}</div>
       </td>
       <td>${escapeHtml(video.categoryName)}</td>
       <td>${escapeHtml(video.channelTitle)}</td>
@@ -409,11 +342,11 @@ function renderReview(review) {
     <tr>
       <td>
         <strong>${escapeHtml(summary.categoryName)}</strong>
-        <div class="muted-line">${formatNumber(summary.count)} sampled video${summary.count === 1 ? "" : "s"}</div>
+        <div class="muted-line">${formatNumber(summary.count)} selected video${summary.count === 1 ? "" : "s"}</div>
       </td>
       <td>
-        ${escapeHtml(summary.topVideo.title)}
-        <div class="muted-line">${escapeHtml(summary.topVideo.channelTitle)} - ${formatDate(summary.topVideo.publishedAt)}</div>
+        ${escapeHtml(summary.firstVideo.title)}
+        <div class="muted-line">${escapeHtml(summary.firstVideo.channelTitle)} - ${formatDate(summary.firstVideo.publishedAt)}</div>
       </td>
       <td>
         <span class="signal">${formatNumber(summary.count)} selected source${summary.count === 1 ? "" : "s"}</span>
@@ -464,7 +397,7 @@ function youtubeWatchUrl(videoId) {
 function renderVideoSources(review, categorySummaries) {
   const videos = review.videos || [];
   const primaryCategory = categorySummaries[0]?.categoryName || "selected source set";
-  const featured = categorySummaries[0]?.topVideo || videos[0];
+  const featured = categorySummaries[0]?.firstVideo || videos[0];
 
   if (!videos.length || !featured?.id) {
     elements.featuredVideo.innerHTML = `
@@ -481,12 +414,12 @@ function renderVideoSources(review, categorySummaries) {
   }
 
   elements.featuredVideo.innerHTML = `
-    <a class="featured-thumb" href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener" aria-label="Open featured YouTube source">
-      <img src="${escapeHtml(featured.thumbnailUrl || `https://i.ytimg.com/vi/${featured.id}/hqdefault.jpg`)}" alt="">
+    <a class="featured-thumb" href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener" aria-label="Open first selected YouTube source in ${escapeHtml(primaryCategory)}">
+      <img src="${escapeHtml(featured.thumbnailUrl || `https://i.ytimg.com/vi/${featured.id}/hqdefault.jpg`)}" alt="YouTube thumbnail for ${escapeHtml(featured.title)}">
       <span>Open YouTube source</span>
     </a>
     <div>
-      <span>Featured source for ${escapeHtml(primaryCategory)}</span>
+      <span>First selected source in ${escapeHtml(primaryCategory)}</span>
       <strong>${escapeHtml(featured.title)}</strong>
       <p>${escapeHtml(featured.channelTitle)} - ${formatNumber(featured.viewCount)} public views - ${formatDate(featured.publishedAt)}</p>
       <a href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener">Open source on YouTube</a>
@@ -496,7 +429,7 @@ function renderVideoSources(review, categorySummaries) {
   elements.videoGallery.innerHTML = videos.map(video => `
     <article>
       <a class="video-thumb" href="${escapeHtml(youtubeWatchUrl(video.id))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(video.title)} on YouTube">
-        <img src="${escapeHtml(video.thumbnailUrl || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`)}" alt="">
+        <img src="${escapeHtml(video.thumbnailUrl || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`)}" alt="YouTube thumbnail for ${escapeHtml(video.title)}">
       </a>
       <div>
         <span>${escapeHtml(video.categoryName)}</span>
@@ -582,6 +515,11 @@ function resizeMindmap() {
   const height = Math.max(Math.floor(rect.height), 360);
   mindmapState.renderer.setSize(width, height, false);
   mindmapState.camera.aspect = width / height;
+  const halfExtent = 10.8;
+  const halfFov = (mindmapState.camera.fov * Math.PI) / 360;
+  const verticalDistance = halfExtent / Math.tan(halfFov);
+  const horizontalDistance = verticalDistance / mindmapState.camera.aspect;
+  mindmapState.camera.position.z = Math.max(verticalDistance, horizontalDistance);
   mindmapState.camera.updateProjectionMatrix();
 }
 
@@ -620,9 +558,9 @@ function buildMindmapScene(review, categorySummaries, config) {
     scale: 1.25
   });
 
-  const categoryRadius = 7.5;
-  const videoRadius = 4.2;
-  const channelRadius = 9.8;
+  const categoryRadius = 5.5;
+  const videoRadius = 3.1;
+  const channelRadius = 7.6;
   const totalCategories = Math.max(categorySummaries.length, 1);
 
   categorySummaries.forEach((summary, index) => {
@@ -818,7 +756,7 @@ function brainstormPromptsFor(data) {
 
   return [
     "Define the decision question before running the video analysis.",
-    "Use category concentration as one signal for a candidate angle.",
+    "Use category representation as one signal for a candidate angle.",
     "Use the API trace to explain how the brief was built."
   ];
 }
@@ -869,10 +807,7 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
     return;
   }
 
-  const concentration = Math.round((primary.count / Math.max(videoCount, 1)) * 100);
-  const topChannel = review.channels
-    .slice()
-    .sort((a, b) => b.subscriberCount - a.subscriberCount)[0];
+  const channelNames = review.channels.slice(0, 3).map(channel => channel.title);
   const playlistNote = review.playlistItems.length
     ? `${review.playlistItems.length} public playlist item${review.playlistItems.length === 1 ? "" : "s"} included from user-provided playlist input.`
     : "No public playlist URL was included in this source set.";
@@ -881,12 +816,12 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
     <article>
       <span>Candidate angle</span>
       <strong>${escapeHtml(primary.categoryName)} is most represented in this selected set.</strong>
-      <p>For ${escapeHtml(config.audience)}, use this as one source-set signal: ${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos fall here, representing ${formatNumber(concentration)}% of the current set.</p>
+      <p>For ${escapeHtml(config.audience)}, use this as one source-set signal: ${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos use this YouTube category label.</p>
     </article>
     <article>
       <span>Evidence</span>
       <strong>${formatNumber(categoryCount)} categories and ${formatNumber(channelCount)} public channels compared.</strong>
-      <p>Top public channel context: ${escapeHtml(topChannel?.title || "No channel returned")}. ${escapeHtml(playlistNote)}</p>
+      <p>Public channels returned: ${escapeHtml(channelNames.join(", ") || "No channel returned")}. ${escapeHtml(playlistNote)}</p>
     </article>
     <article>
       <span>Next action</span>
@@ -897,9 +832,9 @@ function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
 }
 
 function buildReport(review, categorySummaries, quotaEstimate, config) {
-  const mode = review.source === "live" ? "Live YouTube Data API analysis" : "Sample data demonstration";
+  const mode = "Live YouTube Data API analysis";
   const categoryLines = categorySummaries.map(summary => (
-    `- ${summary.categoryName}: ${summary.count} selected source video(s), ${summary.channelCount} channel(s). Representative source: "${summary.topVideo.title}".`
+    `- ${summary.categoryName}: ${summary.count} selected source video(s), ${summary.channelCount} channel(s). First selected source in this category: "${summary.firstVideo.title}".`
   ));
   const endpointLines = review.endpointLog.map(item => (
     `- ${item.name}: ${item.detail || "read-only public metadata lookup"}`
@@ -914,6 +849,7 @@ function buildReport(review, categorySummaries, quotaEstimate, config) {
     review.fetchedAt ? `Fetched at: ${formatTimestamp(new Date(review.fetchedAt))}` : "",
     `Category region: ${config.regionCode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
+    "Interpretation boundary: category labels and public metadata come from YouTube; candidate angles and planning notes are Offering Insights outputs and are not provided or endorsed by YouTube.",
     "Prototype boundary: this tool does not watch videos, transcribe audio, analyze captions, analyze comments, or access private account data.",
     "Input method: public video IDs, video URLs, or public playlist URLs supplied by the user.",
     `Videos reviewed: ${review.videos.length}`,
@@ -1027,11 +963,6 @@ function downloadReport() {
 }
 
 elements.runLive?.addEventListener("click", runLiveReview);
-elements.loadSample?.addEventListener("click", () => {
-  setActiveNavByTarget("live-api-title");
-  renderReview({ ...sampleReview, config: getBriefConfig() });
-  setStatus("Sample result loaded. It demonstrates the same source cards, category summary, evidence map, and exportable brief as a live analysis.", "neutral");
-});
 elements.saveKey?.addEventListener("click", () => {
   const candidate = elements.apiKey?.value.trim() || "";
   if (!candidate) {

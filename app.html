@@ -6,7 +6,7 @@
     <title>Workspace - Offering Insights</title>
     <meta name="description" content="Offering Insights turns selected public YouTube videos into source-backed planning briefs and evidence maps.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260713-public-flow">
+    <link rel="stylesheet" href="styles.css?v=20260713-compliance-audit">
   </head>
   <body>
     <header class="site-header">
@@ -31,7 +31,7 @@
         <button class="nav-button" type="button" data-target="outcome-title" data-requires-analysis disabled>Use result</button>
         <button class="nav-button" type="button" data-target="video-sources-title" data-requires-analysis disabled>Video evidence</button>
         <button class="nav-button" type="button" data-target="mindmap-title" data-requires-analysis disabled>Evidence map</button>
-        <button class="nav-button" type="button" data-target="category-observations-title" data-requires-analysis disabled>Category summary</button>
+        <button class="nav-button" type="button" data-target="category-observations-title" data-requires-analysis disabled>Category representation</button>
         <button class="nav-button" type="button" data-target="transparency-title" data-requires-analysis disabled>API trace</button>
         <button class="nav-button" type="button" data-target="generated-report-title" data-requires-analysis disabled>Export brief</button>
       </aside>
@@ -127,21 +127,20 @@
               <span>I understand that this prototype uses YouTube API Services to read public YouTube metadata for the selected source set, and I agree to the <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms</a>.</span>
             </label>
             <div class="credential-boundary">
-              <strong>Public user flow</strong>
-              <span>Visitors provide public YouTube URLs only. An API key is not generated for each visitor or each analysis.</span>
+              <strong>Review-session boundary</strong>
+              <span>In this static review build, the developer activates the project credential before a visitor-flow demonstration. Visitors provide public YouTube URLs only and never receive an API key. A production public release would keep the credential in a managed server component.</span>
             </div>
             <div class="action-row">
               <button class="button primary action-button" id="run-live" type="button">Analyze public videos</button>
-              <button class="button secondary action-button" id="load-sample" type="button">View sample result</button>
             </div>
             <div class="api-state" id="api-state" role="status" aria-live="polite">
-              Ready. Add public YouTube URLs to analyze, or view a sample result.
+              Ready. Add public YouTube URLs to run a live metadata analysis.
             </div>
             <details class="developer-setup" id="developer-setup">
               <summary>Developer review setup</summary>
               <div class="developer-setup-body">
                 <p>
-                  This static review build lets the project owner activate one existing project API key for the current page session. The key is not generated for a visitor or for an analysis request, is not saved by this site, and is sent only to Google API endpoints.
+                  This static review build lets the project owner activate one existing project API key for the current page session. The key is not generated for a visitor or for an analysis request, is not saved by this site, and is sent to Google over HTTPS in a request header rather than the request URL.
                 </p>
                 <div class="developer-setup-grid">
                   <label class="field">
@@ -184,8 +183,11 @@
           <section class="panel wide-panel service-result-panel">
             <div class="panel-heading">
               <h2 id="decision-brief-title">Planning brief result</h2>
-              <span id="brief-mode">Sample deliverable</span>
+              <span id="brief-mode">Awaiting live analysis</span>
             </div>
+            <p class="product-disclosure">
+              <strong>Source boundary:</strong> YouTube supplies the public metadata and category labels. Category grouping, source-set representation counts, the candidate angle, and the planning note are Offering Insights analytics, not metrics, information, or endorsements provided by YouTube.
+            </p>
             <div class="brief-result" id="brief-result">
               <article>
                 <span>Most represented category</span>
@@ -237,7 +239,9 @@
           <section class="panel wide-panel source-video-panel">
             <div class="panel-heading">
               <h2 id="video-sources-title">Quoted video sources</h2>
-              <span>YouTube public thumbnails and source links</span>
+              <a class="youtube-attribution" href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="Open YouTube">
+                <img src="assets/developed-with-youtube.png" alt="Developed with YouTube">
+              </a>
             </div>
             <div class="video-source-layout">
               <div class="featured-video" id="featured-video">
@@ -272,7 +276,7 @@
                   <p id="mindmap-detail-body">Analyze the video set, then click a node in the map to inspect focused source prompts.</p>
                 </div>
                 <ol id="brainstorm-list">
-                  <li>Use category concentration as one signal for a candidate angle.</li>
+                  <li>Use category representation as one signal for a candidate angle.</li>
                   <li>Use source videos as evidence, not as private user data.</li>
                   <li>Use the API trace when explaining how the brief was built.</li>
                 </ol>
@@ -297,7 +301,7 @@
                 </thead>
                 <tbody id="source-table">
                   <tr>
-                    <td colspan="4">Analyze videos or try the sample brief to inspect the source set.</td>
+                    <td colspan="4">Run a live analysis to inspect the selected public source set.</td>
                   </tr>
                 </tbody>
               </table>
@@ -306,21 +310,21 @@
 
           <section class="panel wide-panel">
             <div class="panel-heading">
-              <h2 id="category-observations-title">Category summary</h2>
-              <span id="category-label">Awaiting run</span>
+              <h2 id="category-observations-title">Category representation</h2>
+              <span id="category-label">Offering Insights view</span>
             </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
                     <th>Category</th>
-                    <th>Representative public video</th>
-                    <th>Source-set signals</th>
+                    <th>First selected public video</th>
+                    <th>Offering Insights source-set signals</th>
                   </tr>
                 </thead>
                 <tbody id="video-table">
                   <tr>
-                    <td colspan="3">Analyze videos or try the sample brief to populate the category summary.</td>
+                    <td colspan="3">Run a live analysis to populate the category summary.</td>
                   </tr>
                 </tbody>
               </table>

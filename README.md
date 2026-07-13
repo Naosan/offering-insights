@@ -25,11 +25,13 @@ Recommended recording flow:
 
 1. Open `https://naosan.github.io/offering-insights/app.html`.
 2. Set the brief name, use case, category region, and decision question.
-3. Open `Developer review setup` and activate the existing project API key once for the current page session.
+3. Open `Developer review setup` and activate the existing project API key once for the current developer-operated review session. The key remains in page memory and is sent to Google over HTTPS using the `x-goog-api-key` request header, not a URL query parameter. A production public release requires a managed server component so visitors never receive the project credential.
 4. Paste selected public video IDs, video URLs, or public playlist URLs into the public user input.
 5. Click `Analyze public videos`.
 6. Show the planning brief, quoted YouTube source cards, Three.js evidence map, source evidence table, category summary, channel context, optional public playlist context, API trace, generated report, and download action.
 7. State that the project key is not generated per visitor or per analysis and that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
+
+The public build intentionally has no fabricated YouTube sample results. Output is shown only after a live API request, so displayed YouTube titles, thumbnails, categories, channels, and statistics remain attributable to the current API response.
 
 ## GitHub Pages publishing notes
 
