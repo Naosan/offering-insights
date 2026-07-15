@@ -52,6 +52,7 @@ a {
   position: sticky;
   top: 0;
   z-index: 10;
+  background: #fff;
 }
 
 .site-footer {
@@ -113,6 +114,24 @@ a {
   display: block;
   width: 158px;
   height: auto;
+}
+
+.api-provider-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.api-provider-row span {
+  flex: 1 1 320px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .product-disclosure {
@@ -913,6 +932,12 @@ h3 {
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
+}
+
+.field small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 input,

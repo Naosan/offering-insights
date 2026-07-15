@@ -60,7 +60,7 @@ test("analyzes a bounded public source set without exposing the API key", async 
 
   const response = await fetch(`${baseUrl}/api/analyze`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Origin: baseUrl },
     body: JSON.stringify({ videoIds: ["dQw4w9WgXcQ"], playlistIds: [], regionCode: "JP" })
   });
   const payload = await response.json();
@@ -88,7 +88,7 @@ test("rejects invalid or oversized analysis input before calling YouTube", async
 
   const response = await fetch(`${baseUrl}/api/analyze`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Origin: baseUrl },
     body: JSON.stringify({ videoIds: ["not-a-video-id"], playlistIds: [], regionCode: "JP" })
   });
 
@@ -96,7 +96,7 @@ test("rejects invalid or oversized analysis input before calling YouTube", async
   assert.equal(calls, 0);
 });
 
-test("rejects unapproved browser origins and does not serve source files", async () => {
+test("requires an approved browser origin and does not serve source files", async () => {
   const baseUrl = await startServer({ apiKey: "test-key" });
   const originResponse = await fetch(`${baseUrl}/api/analyze`, {
     method: "POST",
@@ -106,10 +106,38 @@ test("rejects unapproved browser origins and does not serve source files", async
     },
     body: JSON.stringify({ videoIds: ["dQw4w9WgXcQ"], playlistIds: [], regionCode: "JP" })
   });
+  const missingOriginResponse = await fetch(`${baseUrl}/api/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ videoIds: ["dQw4w9WgXcQ"], playlistIds: [], regionCode: "JP" })
+  });
   const sourceResponse = await fetch(`${baseUrl}/server.js`);
 
   assert.equal(originResponse.status, 403);
+  assert.equal(missingOriginResponse.status, 403);
   assert.equal(sourceResponse.status, 404);
+});
+
+test("publishes a source-by-source workflow without derived category conclusions", async () => {
+  const baseUrl = await startServer({ apiKey: "test-key" });
+  const [appResponse, scriptResponse] = await Promise.all([
+    fetch(`${baseUrl}/app.html`),
+    fetch(`${baseUrl}/script.js`)
+  ]);
+  const app = await appResponse.text();
+  const script = await scriptResponse.text();
+  const publicClient = `${app}\n${script}`;
+
+  assert.equal(appResponse.status, 200);
+  assert.equal(scriptResponse.status, 200);
+  assert.match(publicClient, /does not aggregate/i);
+  assert.match(publicClient, /user-authored/i);
+  assert.match(app, /retrieve public metadata/i);
+  assert.doesNotMatch(publicClient, /summarizeByCategory/);
+  assert.doesNotMatch(publicClient, /most represented/i);
+  assert.doesNotMatch(publicClient, /choose a candidate source angle|is most represented/i);
+  assert.doesNotMatch(publicClient, /category representation/i);
+  assert.doesNotMatch(app, /analyze public videos|public video analysis/i);
 });
 
 test("reports service health without exposing configuration", async () => {
@@ -129,7 +157,7 @@ test("publishes explicit API data handling and retention disclosures", async () 
   assert.equal(response.status, 200);
   assert.match(policy, /exactly one Google Cloud API Project/i);
   assert.match(policy, /141682939002/);
-  assert.match(policy, /Every analysis makes new read-only YouTube Data API requests/i);
+  assert.match(policy, /Every metadata lookup makes new read-only YouTube Data API requests/i);
   assert.match(policy, /does not maintain an API Data database or cache/i);
   assert.match(policy, /retained for 30 days/i);
   assert.match(policy, /within 7 calendar days/i);

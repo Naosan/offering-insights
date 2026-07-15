@@ -76,7 +76,7 @@ function parseAllowedOrigins(value) {
 
 function requestOriginIsAllowed(request, allowedOrigins) {
   const origin = request.headers.origin;
-  if (!origin) return true;
+  if (!origin) return false;
 
   const host = request.headers.host;
   const sameOrigin = host && (origin === `https://${host}` || origin === `http://${host}`);
@@ -109,7 +109,7 @@ function sendJson(response, status, payload) {
 
 async function readJsonBody(request) {
   if (!String(request.headers["content-type"] || "").toLowerCase().startsWith("application/json")) {
-    throw new HttpError(415, "Send the analysis input as application/json.");
+    throw new HttpError(415, "Send the metadata request as application/json.");
   }
 
   const chunks = [];
@@ -117,7 +117,7 @@ async function readJsonBody(request) {
   for await (const chunk of request) {
     totalBytes += chunk.length;
     if (totalBytes > MAX_BODY_BYTES) {
-      throw new HttpError(413, "The analysis request is too large.");
+      throw new HttpError(413, "The metadata request is too large.");
     }
     chunks.push(chunk);
   }
@@ -125,7 +125,7 @@ async function readJsonBody(request) {
   try {
     return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
   } catch {
-    throw new HttpError(400, "The analysis request contains invalid JSON.");
+    throw new HttpError(400, "The metadata request contains invalid JSON.");
   }
 }
 
@@ -183,7 +183,7 @@ function createRateLimiter({
     const recent = (bucket?.timestamps || []).filter(value => timestamp - value < RATE_LIMIT_WINDOW_MS);
 
     if (recent.length >= RATE_LIMIT_MAX_REQUESTS) {
-      throw new HttpError(429, "Too many analysis requests. Please try again later.");
+      throw new HttpError(429, "Too many metadata requests. Please try again later.");
     }
 
     recent.push(timestamp);
@@ -385,7 +385,7 @@ export function createOfferingInsightsServer({
     if (pathname === "/api/analyze") {
       applyCorsHeaders(request, response, origins);
       if (!requestOriginIsAllowed(request, origins)) {
-        sendJson(response, 403, { error: "This browser origin is not allowed." });
+        sendJson(response, 403, { error: "A permitted browser origin is required." });
         return;
       }
       if (request.method === "OPTIONS") {

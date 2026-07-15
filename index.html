@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Offering Insights</title>
-    <meta name="description" content="Offering Insights turns selected public YouTube videos into source-backed planning briefs, evidence tables, and category summaries.">
+    <meta name="description" content="Offering Insights displays public metadata for selected YouTube sources and helps users write their own source-backed planning notes.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260715-privacy-v2">
+    <link rel="stylesheet" href="styles.css?v=20260715-source-register-v2">
   </head>
   <body>
     <header class="site-header">
@@ -28,7 +28,7 @@
           <p class="eyebrow">Public video source review workspace</p>
           <h1>Offering Insights</h1>
           <p class="lede">
-            Turn public YouTube videos you already selected into a source-backed planning brief. Compare category labels, channel context, public thumbnails, and YouTube source links before exporting a concise note.
+            Review public YouTube videos you already selected, inspect current metadata for each source, and write your own source-backed planning note. Offering Insights does not rank, score, group, or recommend sources.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button primary" href="app.html">Open workspace</a>
@@ -57,16 +57,16 @@
             <span></span>
             <strong>app.offering-insights.local</strong>
           </div>
-          <img src="assets/dashboard-preview.png?v=20260713-compliance-audit" alt="Offering Insights dashboard showing public source evidence, category summaries, and planning brief controls">
+          <img src="assets/dashboard-preview.png?v=20260715-source-register-v2" alt="Offering Insights dashboard showing selected public YouTube sources and their source relationship map">
         </div>
       </section>
 
       <section class="section-band compact">
         <div class="section-heading">
           <p class="eyebrow">What it does</p>
-          <h2>Turn selected videos into a useful planning brief</h2>
+          <h2>Build a planning note from sources you review yourself</h2>
           <p>
-            Offering Insights is built for people preparing editorial planning, source review, or research notes. The workspace keeps the original YouTube sources visible while turning public metadata into a compact direction.
+            Offering Insights is built for people preparing editorial planning, source review, or research notes. The workspace keeps the original YouTube sources visible and leaves the interpretation and written conclusion to the user.
           </p>
         </div>
         <div class="workflow-grid" aria-label="Product workflow">
@@ -77,13 +77,13 @@
           </article>
           <article>
             <span class="step-number">02</span>
-            <h3>Compare context</h3>
-            <p>Read title, channel, playlist, category, publication, and public statistics context.</p>
+            <h3>Review each source</h3>
+            <p>Read the title, channel, playlist, category, publication, and public statistics returned for each individual source.</p>
           </article>
           <article>
             <span class="step-number">03</span>
-            <h3>Prepare the brief</h3>
-            <p>Use the structured view and source map to prepare editorial planning notes or a short evidence brief.</p>
+            <h3>Write your note</h3>
+            <p>Use the source register and one-to-one relationship map to write and export your own planning observation.</p>
           </article>
         </div>
       </section>
@@ -106,7 +106,7 @@
           </article>
           <article class="endpoint-card green">
             <h3>youtube.channels.list</h3>
-            <p>Review public channel metadata needed for source context and editorial comparison.</p>
+            <p>Show public channel metadata as context for each selected source.</p>
           </article>
           <article class="endpoint-card gold">
             <h3>youtube.playlistItems.list</h3>
@@ -114,7 +114,7 @@
           </article>
           <article class="endpoint-card coral">
             <h3>youtube.videoCategories.list</h3>
-            <p>Map category IDs to readable category names for category-level analysis.</p>
+            <p>Map each selected video's category ID to the readable category label supplied by YouTube.</p>
           </article>
         </div>
       </section>

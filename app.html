@@ -4,9 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Workspace - Offering Insights</title>
-    <meta name="description" content="Offering Insights turns selected public YouTube videos into source-backed planning briefs and evidence maps.">
+    <meta name="description" content="Offering Insights helps users review selected public YouTube sources and write their own source-backed planning notes.">
     <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="styles.css?v=20260715-privacy-v2">
+    <link rel="stylesheet" href="styles.css?v=20260715-source-register-v2">
   </head>
   <body>
     <header class="site-header">
@@ -26,23 +26,23 @@
       <aside class="sidebar" aria-label="Dashboard navigation">
         <div class="sidebar-title">Offering Insights</div>
         <button class="nav-button active" type="button" data-target="workflow-title">Workflow</button>
-        <button class="nav-button" type="button" data-target="live-api-title">Analyze videos</button>
-        <button class="nav-button" type="button" data-target="decision-brief-title" data-requires-analysis disabled>Brief result</button>
+        <button class="nav-button" type="button" data-target="live-api-title">Retrieve metadata</button>
+        <button class="nav-button" type="button" data-target="decision-brief-title" data-requires-analysis disabled>Source review</button>
         <button class="nav-button" type="button" data-target="outcome-title" data-requires-analysis disabled>Use result</button>
         <button class="nav-button" type="button" data-target="video-sources-title" data-requires-analysis disabled>Video evidence</button>
-        <button class="nav-button" type="button" data-target="mindmap-title" data-requires-analysis disabled>Evidence map</button>
-        <button class="nav-button" type="button" data-target="category-observations-title" data-requires-analysis disabled>Category representation</button>
+        <button class="nav-button" type="button" data-target="mindmap-title" data-requires-analysis disabled>Source map</button>
+        <button class="nav-button" type="button" data-target="category-observations-title" data-requires-analysis disabled>Category labels</button>
         <button class="nav-button" type="button" data-target="transparency-title" data-requires-analysis disabled>API trace</button>
-        <button class="nav-button" type="button" data-target="generated-report-title" data-requires-analysis disabled>Export brief</button>
+        <button class="nav-button" type="button" data-target="generated-report-title" data-requires-analysis disabled>Export note</button>
       </aside>
 
       <section class="dashboard">
         <div class="dashboard-top">
           <div>
             <p class="eyebrow">Public video source review workspace</p>
-            <h1>Turn selected public YouTube videos into source-backed planning briefs</h1>
+            <h1>Review selected public YouTube videos and write a source-backed planning note</h1>
             <p class="dashboard-subtitle">
-              Paste public videos or a public playlist you already selected. Offering Insights reads public metadata, category labels, channel context, thumbnails, and source links, then organizes the set into evidence tables and an exportable brief.
+              Paste public videos or a public playlist you already selected. Offering Insights displays current public metadata for each source without ranking, scoring, grouping, or recommending a conclusion. You decide what the sources mean and write the planning note.
             </p>
           </div>
           <div class="status-strip" aria-label="API status">
@@ -53,7 +53,7 @@
 
         <section class="panel brief-panel" aria-labelledby="workflow-title">
           <div class="panel-heading">
-            <h2 id="workflow-title">From source set to planning brief</h2>
+            <h2 id="workflow-title">From selected sources to a user-authored note</h2>
             <span>Workflow</span>
           </div>
           <div class="brief-grid">
@@ -63,14 +63,14 @@
               <p>Use YouTube IDs, URLs, or a public playlist from videos you are already considering for an article, report, or planning note.</p>
             </article>
             <article>
-              <span>2. Understand</span>
-              <strong>See which categories and channels shape the set.</strong>
-              <p>The workspace compares public metadata so the team can see whether the set reads as education, science, talks, or a mixed brief.</p>
+              <span>2. Review</span>
+              <strong>Inspect each source and its YouTube-provided context.</strong>
+              <p>The workspace keeps every video separate and shows its title, category label, channel, thumbnail, source link, and public statistics.</p>
             </article>
             <article>
-              <span>3. Create</span>
-              <strong>Turn the evidence into a useful next step.</strong>
-              <p>Export a concise brief, inspect cited video cards, and use the interactive map to explore candidate source angles.</p>
+              <span>3. Write</span>
+              <strong>Record your own observation and export it with the sources.</strong>
+              <p>Offering Insights does not infer a recommendation. Your planning question and note remain user-authored and are paired with the cited source register.</p>
             </article>
           </div>
         </section>
@@ -83,8 +83,8 @@
           <div class="control-body">
             <div class="setup-grid">
               <label class="field">
-                <span>Brief name</span>
-                <input id="brief-title" type="text" spellcheck="false" value="Selected public video source brief">
+                <span>Note name</span>
+                <input id="brief-title" type="text" spellcheck="false" value="Selected public video source review">
               </label>
               <label class="field">
                 <span>Use case</span>
@@ -104,8 +104,13 @@
                 </select>
               </label>
               <label class="field wide">
-                <span>Decision question</span>
-                <input id="decision-question" type="text" spellcheck="false" value="Which source angle should this selected video set support?">
+                <span>Review question</span>
+                <input id="decision-question" type="text" spellcheck="false" value="What should I verify in each selected source before using it?">
+              </label>
+              <label class="field wide">
+                <span>Your planning note</span>
+                <textarea id="planning-note" rows="4" spellcheck="true" placeholder="Write your own observation after reviewing the cited YouTube sources."></textarea>
+                <small>This text is written by you. Offering Insights does not generate a ranking, score, category conclusion, or recommendation from YouTube API Data.</small>
               </label>
             </div>
           </div>
@@ -113,15 +118,21 @@
 
         <section class="panel control-panel" aria-labelledby="live-api-title">
           <div class="panel-heading">
-            <h2 id="live-api-title">Analyze public videos</h2>
-            <span>Public video analysis</span>
+            <h2 id="live-api-title">Retrieve public metadata</h2>
+            <span>Fresh read-only lookup</span>
           </div>
           <div class="control-body">
             <label class="field wide source-input">
               <span>Public YouTube video or playlist URLs</span>
               <textarea id="video-ids" rows="3" spellcheck="false" placeholder="Paste one or more public YouTube video URLs or video IDs"></textarea>
-              <small>Start with public videos you already selected for this brief.</small>
+              <small>Start with public videos you already selected for this source review.</small>
             </label>
+            <div class="api-provider-row">
+              <a class="youtube-attribution" href="https://www.youtube.com/" target="_blank" rel="noopener" aria-label="Open YouTube">
+                <img src="assets/developed-with-youtube.png" alt="Developed with YouTube">
+              </a>
+              <span>Public metadata is retrieved through YouTube Data API Services only after you submit selected public source URLs or IDs.</span>
+            </div>
             <label class="consent-row">
               <input id="terms-consent" type="checkbox">
               <span>I understand that this prototype uses YouTube API Services to read public YouTube metadata for the selected source set, and I agree to the <a href="privacy.html">Privacy Policy</a> and <a href="terms.html">Terms</a>.</span>
@@ -131,57 +142,57 @@
               <span>Offering Insights sends only the selected public IDs and category region to its managed service. The service makes fresh read-only YouTube Data API requests; the project credential is never entered into or returned to this browser. Inputs and API responses are not stored in an application database or server-side cache. See <a href="privacy.html#api-data-refresh">API Data handling</a>.</span>
             </div>
             <div class="action-row">
-              <button class="button primary action-button" id="run-live" type="button">Analyze public videos</button>
+              <button class="button primary action-button" id="run-live" type="button">Retrieve public metadata</button>
             </div>
             <div class="api-state" id="api-state" role="status" aria-live="polite">
-              Ready. Add public YouTube URLs to run a live metadata analysis.
+              Ready. Add public YouTube URLs to run a fresh public-metadata lookup.
             </div>
           </div>
         </section>
 
         <div class="metrics-grid analysis-output" aria-live="polite" hidden>
           <article class="metric">
-            <span>Videos reviewed</span>
-            <strong id="metric-videos">0</strong>
+            <span>Source selection</span>
+            <strong id="metric-selection">User-selected</strong>
           </article>
           <article class="metric">
-            <span>Channels included</span>
-            <strong id="metric-channels">0</strong>
+            <span>Data scope</span>
+            <strong id="metric-data">Public only</strong>
           </article>
           <article class="metric">
-            <span>Categories found</span>
-            <strong id="metric-quota">0</strong>
+            <span>youtube.search.list</span>
+            <strong id="metric-search">Not used</strong>
           </article>
           <article class="metric">
-            <span>Brief status</span>
-            <strong id="metric-endpoint">Ready</strong>
+            <span>API mode</span>
+            <strong id="metric-endpoint">Read only</strong>
           </article>
         </div>
 
         <div class="dashboard-grid analysis-output" hidden>
           <section class="panel wide-panel service-result-panel">
             <div class="panel-heading">
-              <h2 id="decision-brief-title">Planning brief result</h2>
-              <span id="brief-mode">Awaiting live analysis</span>
+              <h2 id="decision-brief-title">Source review result</h2>
+              <span id="brief-mode">Awaiting metadata lookup</span>
             </div>
             <p class="product-disclosure">
-              <strong>Source boundary:</strong> YouTube supplies the public metadata and category labels. Category grouping, source-set representation counts, the candidate angle, and the planning note are Offering Insights analytics, not metrics, information, or endorsements provided by YouTube.
+              <strong>Source boundary:</strong> YouTube supplies the public metadata and category labels shown for each source. Offering Insights does not aggregate those sources into category counts, rankings, scores, trends, candidate angles, or recommendations. The planning question and note are entered by the user.
             </p>
             <div class="brief-result" id="brief-result">
               <article>
-                <span>Most represented category</span>
-                <strong>Waiting for video analysis</strong>
-                <p>Analyze the selected videos to create a source-backed planning brief.</p>
+                <span>Review question</span>
+                <strong>Waiting for public metadata</strong>
+                <p>Retrieve the selected videos to display a source-by-source metadata register.</p>
               </article>
               <article>
                 <span>Service output</span>
-                <strong>Planning brief with source evidence</strong>
-                <p>The brief is generated from public YouTube metadata and cited source cards.</p>
+                <strong>Source register with cited public metadata</strong>
+                <p>Each selected video remains a separate source. No automatic conclusion is generated.</p>
               </article>
               <article>
                 <span>Next action</span>
-                <strong>Export planning note</strong>
-                <p>Copy the generated report for editorial planning, source review, or research notes.</p>
+                <strong>Write and export your note</strong>
+                <p>Your own planning note can be copied with the source register and API trace.</p>
               </article>
             </div>
           </section>
@@ -189,13 +200,13 @@
           <section class="panel wide-panel outcome-panel" aria-labelledby="outcome-title">
             <div class="panel-heading">
               <h2 id="outcome-title">What this enables</h2>
-              <span>After analysis</span>
+              <span>After retrieval</span>
             </div>
             <div class="outcome-grid">
               <article>
-                <span>Plan</span>
-                <strong>Choose a candidate source angle.</strong>
-                <p>Use the category summary, channel context, and source cards to decide what the selected video set can support.</p>
+                <span>Review</span>
+                <strong>Inspect every selected source independently.</strong>
+                <p>Read the current YouTube-provided title, category label, channel context, thumbnail, link, and public statistics for each video.</p>
               </article>
               <article>
                 <span>Cite</span>
@@ -204,12 +215,12 @@
               </article>
               <article>
                 <span>Export</span>
-                <strong>Turn the analysis into a reusable note.</strong>
-                <p>Copy or download the generated planning brief for editorial planning, source review, or a research handoff.</p>
+                <strong>Pair your own note with the cited sources.</strong>
+                <p>Copy or download the user-authored planning note with a source-by-source metadata register.</p>
               </article>
               <article>
                 <span>Explain</span>
-                <strong>Show exactly how the brief was built.</strong>
+                <strong>Show exactly how the source register was retrieved.</strong>
                 <p>Use the API trace to show the read-only YouTube Data API methods and the public-data boundary.</p>
               </article>
             </div>
@@ -224,8 +235,8 @@
             </div>
             <div class="video-source-layout">
               <div class="featured-video" id="featured-video">
-                <strong>Analyze videos to load a featured YouTube source.</strong>
-                <p>Offering Insights shows public videos as cited sources for the generated planning brief.</p>
+                <strong>Retrieve metadata to load a featured YouTube source.</strong>
+                <p>Offering Insights shows public videos as cited sources for the user-authored planning note.</p>
               </div>
               <div class="video-gallery" id="video-gallery">
                 <article>
@@ -239,25 +250,25 @@
           <section class="mindmap-workspace wide-panel" aria-labelledby="mindmap-title">
             <div class="mindmap-heading">
               <div>
-                <h2 id="mindmap-title">Evidence map</h2>
-                <p>Use the source evidence as a live map of brief, categories, videos, and channel context.</p>
+                <h2 id="mindmap-title">Source relationship map</h2>
+                <p>Inspect one-to-one links from the first six selected videos to each video's YouTube-provided category label and public channel context. The map does not group, rank, or score sources.</p>
               </div>
               <span>Optional visual map</span>
             </div>
             <div class="mindmap-layout">
               <div class="mindmap-stage">
-                <canvas id="mindmap-canvas" aria-label="Interactive category mind map"></canvas>
+                <canvas id="mindmap-canvas" aria-label="Interactive source relationship map"></canvas>
               </div>
               <aside class="brainstorm-panel" aria-label="Brainstorming prompts">
                 <div>
                   <span>Selected node</span>
                   <strong id="mindmap-detail-title">Source brief</strong>
-                  <p id="mindmap-detail-body">Analyze the video set, then click a node in the map to inspect focused source prompts.</p>
+                  <p id="mindmap-detail-body">Retrieve the source metadata, then click a node to inspect that individual source relationship.</p>
                 </div>
                 <ol id="brainstorm-list">
-                  <li>Use category representation as one signal for a candidate angle.</li>
-                  <li>Use source videos as evidence, not as private user data.</li>
-                  <li>Use the API trace when explaining how the brief was built.</li>
+                  <li>Review each video as a separate cited source.</li>
+                  <li>Write your own observation after opening the original source.</li>
+                  <li>Use the API trace to verify which read-only methods supplied the metadata.</li>
                 </ol>
               </aside>
             </div>
@@ -280,7 +291,7 @@
                 </thead>
                 <tbody id="source-table">
                   <tr>
-                    <td colspan="4">Run a live analysis to inspect the selected public source set.</td>
+                    <td colspan="4">Run a fresh metadata lookup to inspect the selected public source set.</td>
                   </tr>
                 </tbody>
               </table>
@@ -289,21 +300,21 @@
 
           <section class="panel wide-panel">
             <div class="panel-heading">
-              <h2 id="category-observations-title">Category representation</h2>
-              <span id="category-label">Offering Insights view</span>
+              <h2 id="category-observations-title">Category labels by source</h2>
+              <span id="category-label">YouTube-provided labels</span>
             </div>
             <div class="table-wrap">
               <table>
                 <thead>
                   <tr>
-                    <th>Category</th>
-                    <th>First selected public video</th>
-                    <th>Offering Insights source-set signals</th>
+                    <th>Selected video</th>
+                    <th>YouTube category label</th>
+                    <th>Public channel</th>
                   </tr>
                 </thead>
                 <tbody id="video-table">
                   <tr>
-                    <td colspan="3">Run a live analysis to populate the category summary.</td>
+                    <td colspan="3">Run a fresh metadata lookup to display the category label returned for each source.</td>
                   </tr>
                 </tbody>
               </table>
@@ -318,14 +329,14 @@
             <div class="list-stack" id="channel-list">
               <article>
                 <strong>No channel data yet</strong>
-                <p>Channel context is read after video metadata returns public channel IDs for the selected cohort.</p>
+                <p>Channel context is read after video metadata returns public channel IDs for the selected sources.</p>
               </article>
             </div>
           </section>
 
           <section class="panel endpoint-panel" aria-labelledby="transparency-title">
             <div class="panel-heading">
-              <h2 id="transparency-title">How this brief was built</h2>
+              <h2 id="transparency-title">How this source register was retrieved</h2>
               <span>API trace</span>
             </div>
             <ol class="endpoint-list endpoint-log" id="endpoint-log">
@@ -351,14 +362,14 @@
 
           <section class="panel wide-panel">
             <div class="panel-heading">
-              <h2 id="generated-report-title">Generated planning brief</h2>
+              <h2 id="generated-report-title">Exportable source review note</h2>
               <span>For export</span>
             </div>
             <div class="report-panel">
-              <pre id="report-output">Analyze videos to generate a concise planning brief from public YouTube metadata.</pre>
+              <pre id="report-output">Retrieve public metadata to prepare a source register, then add your own planning note.</pre>
               <div class="action-row">
-                <button class="button secondary action-button" id="copy-report" type="button">Copy report</button>
-                <button class="button secondary action-button" id="download-report" type="button">Download brief</button>
+                <button class="button secondary action-button" id="copy-report" type="button">Copy note</button>
+                <button class="button secondary action-button" id="download-report" type="button">Download note</button>
                 <span class="copy-status" id="copy-status"></span>
               </div>
             </div>
@@ -368,10 +379,10 @@
     </main>
 
     <footer class="site-footer">
-      <span>Offering Insights helps turn public YouTube source sets into source-backed planning briefs.</span>
+      <span>Offering Insights helps users review selected public YouTube sources and write their own source-backed notes.</span>
       <span><a href="privacy.html">Privacy</a></span>
     </footer>
 
-  <script src="script.js?v=20260713-managed-api-v5"></script>
+  <script src="script.js?v=20260715-source-register-v4"></script>
   </body>
 </html>

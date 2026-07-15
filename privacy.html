@@ -6,7 +6,7 @@
     <title>Privacy Policy - Offering Insights</title>
     <meta name="description" content="Privacy policy and data handling disclosures for Offering Insights.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260715-privacy-v2">
+    <link rel="stylesheet" href="styles.css?v=20260715-source-register-v2">
   </head>
   <body>
     <header class="site-header">
@@ -35,7 +35,7 @@
 
       <h2>Information we access, collect, store, and use</h2>
       <p>
-        The following table distinguishes user-provided planning information, analysis inputs, public YouTube API Data, technical request information, and contact messages.
+        The following table distinguishes user-provided planning information, metadata request inputs, public YouTube API Data, technical request information, and contact messages.
       </p>
       <div class="table-wrap policy-table-wrap">
         <table class="policy-table">
@@ -56,21 +56,21 @@
             </tr>
             <tr>
               <th scope="row">Planning input</th>
-              <td data-label="Accessed or collected">The brief name, use case, and decision question entered in the workspace.</td>
-              <td data-label="Use and sharing">Used only by browser code to label and format the planning brief. These fields are not sent to the managed service, Google, or YouTube.</td>
+              <td data-label="Accessed or collected">The note name, use case, review question, and planning note entered in the workspace.</td>
+              <td data-label="Use and sharing">Used only by browser code to format the user-authored source review note. These fields are not sent to the managed service, Google, or YouTube.</td>
               <td data-label="Storage and deletion">Held only in the current page state and removed from application state when the page is reloaded or closed. A copy persists only when the user chooses to copy or download it locally.</td>
             </tr>
             <tr>
               <th scope="row">Public YouTube API Data</th>
               <td data-label="Accessed or collected">Public video, channel, category, and optional playlist-item metadata returned by <code>videos.list</code>, <code>channels.list</code>, <code>videoCategories.list</code>, and <code>playlistItems.list</code>. This can include IDs, titles, channel names, descriptions, category labels, thumbnails, publication dates, duration, public status, and public statistics such as views, likes, comments, subscriber counts, and video counts.</td>
-              <td data-label="Use and sharing">Used to show the selected YouTube sources, public category labels, public channel context, API trace, and a source-backed planning note in the requesting user's browser. The data flows from YouTube to the managed service and then to that browser. Offering Insights does not sell it or use it for advertising or user profiling.</td>
-              <td data-label="Storage and deletion">Not stored in an application database, server-side cache, or application log. API responses are returned with <code>Cache-Control: no-store</code>, kept only in the current page state, replaced by the next analysis, and removed from application state when the page is reloaded or closed.</td>
+              <td data-label="Use and sharing">Used to show each selected YouTube source, its public category label, its public channel context, and the API trace in the requesting user's browser. The application does not aggregate categories, calculate representation, rank or score sources, identify trends, or generate recommendations from API Data. The data flows from YouTube to the managed service and then to that browser. Offering Insights does not sell it or use it for advertising or user profiling.</td>
+              <td data-label="Storage and deletion">Not stored in an application database, server-side cache, or application log. API responses are returned with <code>Cache-Control: no-store</code>, kept only in the current page state, replaced by the next lookup, and removed from application state when the page is reloaded or closed.</td>
             </tr>
             <tr>
               <th scope="row">Technical request information</th>
               <td data-label="Accessed or collected">Standard web request information may include source IP address, user agent, timestamp, request method and path, response status, and latency.</td>
               <td data-label="Use and sharing">Used by Google Cloud to operate and secure the managed service. The application derives an instance-specific HMAC value from the source address for abuse rate limiting; the raw address is not stored in the application rate-limit map.</td>
-              <td data-label="Storage and deletion">The HMAC rate-limit entry is held in process memory for no more than 10 minutes. Google Cloud's standard request logs are retained for 30 days. The application does not write analysis request bodies, selected source IDs, or YouTube API responses to those logs.</td>
+              <td data-label="Storage and deletion">The HMAC rate-limit entry is held in process memory for no more than 10 minutes. Google Cloud's standard request logs are retained for 30 days. The application does not write metadata request bodies, selected source IDs, or YouTube API responses to those logs.</td>
             </tr>
             <tr>
               <th scope="row">Contact information</th>
@@ -84,13 +84,13 @@
 
       <h2 id="api-project">API Project and credential boundary</h2>
       <p>
-        Offering Insights uses exactly one Google Cloud API Project for this API Client: project number <code>141682939002</code>. No other project number is used for this API Client. The project API credential is stored in Google Secret Manager and used only by the managed Cloud Run service. It is never entered by, returned to, issued to, or stored in a public user's browser, and no credential is generated per user or per analysis.
+        Offering Insights uses exactly one Google Cloud API Project for this API Client: project number <code>141682939002</code>. No other project number is used for this API Client. The project API credential is stored in Google Secret Manager and used only by the managed Cloud Run service. It is never entered by, returned to, issued to, or stored in a public user's browser, and no credential is generated per user or per metadata request.
       </p>
 
       <h2 id="api-data-refresh">API Data refresh, update, and deletion</h2>
       <ul class="policy-list">
-        <li>Every analysis makes new read-only YouTube Data API requests and displays the most recently returned public API Data. Offering Insights does not reuse a stored API response.</li>
-        <li>Running another analysis replaces the prior result in the current page with newly retrieved API Data.</li>
+        <li>Every metadata lookup makes new read-only YouTube Data API requests and displays the most recently returned public API Data. Offering Insights does not reuse a stored API response.</li>
+        <li>Running another lookup replaces the prior result in the current page with newly retrieved API Data.</li>
         <li>Reloading or closing the page removes the live result from Offering Insights application state.</li>
         <li>The managed service does not persist API Data after completing the request and does not maintain an API Data database or cache.</li>
         <li>Because Offering Insights does not retain API Data, it does not keep Non-Authorized Data for 30 days. If persistent API Data storage is introduced later, this policy and user consent flow will be updated before that use begins, and stored data will be refreshed or deleted no later than the period required by the YouTube API Services Developer Policies.</li>
@@ -111,7 +111,7 @@
 
       <h2>Cookies and information on the user's device</h2>
       <p>
-        Offering Insights application code does not set advertising or analytics cookies and does not use <code>localStorage</code> or <code>sessionStorage</code> for analysis inputs or API Data. Live results remain in page memory. A file or clipboard copy is created only after the user selects the corresponding export action.
+        Offering Insights application code does not set advertising or analytics cookies and does not use <code>localStorage</code> or <code>sessionStorage</code> for metadata request inputs or API Data. Live results remain in page memory. A file or clipboard copy is created only after the user selects the corresponding export action.
       </p>
 
       <h2>Security</h2>

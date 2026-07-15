@@ -6,7 +6,7 @@
     <title>Terms of Service - Offering Insights</title>
     <meta name="description" content="Terms of Service for Offering Insights.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260715-privacy-v2">
+    <link rel="stylesheet" href="styles.css?v=20260715-source-register-v2">
   </head>
   <body>
     <header class="site-header">
@@ -29,12 +29,12 @@
         These terms apply to Offering Insights, a prototype video research dashboard. By using the website or prototype, you agree to these terms.
       </p>
       <div class="doc-callout">
-        Offering Insights is an early prototype for source-backed planning briefs from selected public YouTube metadata. It is not affiliated with YouTube or Google.
+        Offering Insights is an early prototype for reviewing selected public YouTube sources and writing user-authored planning notes. It is not affiliated with YouTube or Google.
       </div>
 
       <h2>Prototype status</h2>
       <p>
-        Offering Insights is provided as a prototype and may change, pause, or stop without notice. Analysis results shown in the workspace are produced from a live YouTube Data API request made during the current page session.
+        Offering Insights is provided as a prototype and may change, pause, or stop without notice. Public metadata shown in the workspace is produced from fresh YouTube Data API requests made during the current page session.
       </p>
       <p>
         The service keeps its project API credential in managed server configuration. Visitors do not enter, receive, or inspect that credential. The current prototype does not provide Google OAuth sign-in, video upload, account management, or comment moderation features.
@@ -42,7 +42,7 @@
 
       <h2>API Project and data handling</h2>
       <p>
-        Offering Insights uses one Google Cloud API Project, project number <code>141682939002</code>, exclusively for this API Client. It does not distribute this use case across multiple project numbers. Each analysis makes fresh read-only YouTube Data API requests, and the service does not persist selected source IDs or returned API Data in an application database or server-side cache. Details are provided in the <a href="privacy.html#api-data-refresh">Privacy Policy</a>.
+        Offering Insights uses Google Cloud project number <code>141682939002</code> for the YouTube Data API requests made by this API Client. Offering Insights does not use another project number for this API Client or distribute its YouTube API use across multiple projects. Each metadata lookup makes fresh read-only requests, and the service does not persist selected source IDs or returned API Data in an application database or server-side cache. Details are provided in the <a href="privacy.html#api-data-refresh">Privacy Policy</a>.
       </p>
 
       <h2>Acceptable use</h2>
@@ -50,7 +50,7 @@
         You may use the prototype for lawful source review, editorial planning, research notes, and product evaluation. You may not use it to violate YouTube policies, bypass access controls, scrape YouTube outside approved API methods, harass users, or process data in a way that infringes rights or privacy.
       </p>
       <p>
-        Video titles, channel details, category labels, thumbnails, and public statistics displayed as source evidence are YouTube API Data. Category grouping, source-set representation counts, candidate angles, evidence-map organization, and planning notes are independently produced by Offering Insights and are not YouTube-provided metrics or endorsements.
+        Video titles, channel details, category labels, thumbnails, and public statistics displayed as source evidence are YouTube API Data. Offering Insights displays that metadata one source at a time. It does not aggregate category data, calculate source-set representation, rank or score sources, identify trends, or generate candidate angles or recommendations from YouTube API Data. Review questions and planning notes are entered by the user and are not YouTube-provided conclusions or endorsements.
       </p>
 
       <h2>YouTube and Google policies</h2>

@@ -8,13 +8,14 @@ const elements = {
   briefAudience: document.getElementById("brief-audience"),
   regionCode: document.getElementById("region-code"),
   decisionQuestion: document.getElementById("decision-question"),
+  planningNote: document.getElementById("planning-note"),
   videoIds: document.getElementById("video-ids"),
   runLive: document.getElementById("run-live"),
   termsConsent: document.getElementById("terms-consent"),
   apiState: document.getElementById("api-state"),
-  metricVideos: document.getElementById("metric-videos"),
-  metricChannels: document.getElementById("metric-channels"),
-  metricQuota: document.getElementById("metric-quota"),
+  metricSelection: document.getElementById("metric-selection"),
+  metricData: document.getElementById("metric-data"),
+  metricSearch: document.getElementById("metric-search"),
   metricEndpoint: document.getElementById("metric-endpoint"),
   briefMode: document.getElementById("brief-mode"),
   briefResult: document.getElementById("brief-result"),
@@ -41,10 +42,11 @@ const elements = {
 
 function getBriefConfig() {
   return {
-    title: elements.briefTitle?.value.trim() || "Selected public video source brief",
+    title: elements.briefTitle?.value.trim() || "Selected public video source review",
     audience: elements.briefAudience?.value || "source review",
     regionCode: elements.regionCode?.value || "JP",
-    question: elements.decisionQuestion?.value.trim() || "Which source angle should this selected video set support?"
+    question: elements.decisionQuestion?.value.trim() || "What should I verify in each selected source before using it?",
+    planningNote: elements.planningNote?.value.trim() || ""
   };
 }
 
@@ -118,7 +120,7 @@ async function runLiveReview() {
   setActiveNavByTarget("live-api-title");
 
   if (elements.termsConsent && !elements.termsConsent.checked) {
-    setStatus("Review and accept the Privacy Policy and Terms before running a live YouTube API analysis.", "warning");
+    setStatus("Review and accept the Privacy Policy and Terms before retrieving public YouTube metadata.", "warning");
     return;
   }
 
@@ -138,7 +140,7 @@ async function runLiveReview() {
     });
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(payload.error || `Analysis service returned HTTP ${response.status}.`);
+      throw new Error(payload.error || `Metadata service returned HTTP ${response.status}.`);
     }
 
     renderReview({
@@ -149,7 +151,7 @@ async function runLiveReview() {
     const exclusionNote = payload.excludedVideoCount
       ? ` ${formatNumber(payload.excludedVideoCount)} non-public source${payload.excludedVideoCount === 1 ? " was" : "s were"} excluded.`
       : "";
-    setStatus(`Live YouTube API analysis completed at ${formatTimestamp(new Date())}.${exclusionNote}`, "success");
+    setStatus(`Fresh public metadata retrieved at ${formatTimestamp(new Date())}.${exclusionNote}`, "success");
   } catch (error) {
     setStatus(error.message, "error");
   } finally {
@@ -157,35 +159,12 @@ async function runLiveReview() {
   }
 }
 
-function summarizeByCategory(videos) {
-  const groups = new Map();
-
-  videos.forEach(video => {
-    const group = groups.get(video.categoryName) || {
-      categoryName: video.categoryName,
-      videos: [],
-      channels: new Set()
-    };
-    if (!group.videos.includes(video)) group.videos.push(video);
-    group.channels.add(video.channelTitle);
-    groups.set(video.categoryName, group);
-  });
-
-  return [...groups.values()].map(group => {
-    return {
-      categoryName: group.categoryName,
-      count: group.videos.length,
-      channelCount: group.channels.size,
-      firstVideo: group.videos[0],
-      videos: group.videos
-    };
-  }).sort((a, b) => b.count - a.count || a.categoryName.localeCompare(b.categoryName));
-}
+let activeReviewState = null;
 
 function renderReview(review) {
-  const categorySummaries = summarizeByCategory(review.videos);
   const quotaEstimate = review.endpointLog.reduce((total, item) => total + (item.cost || 0), 0);
   const config = review.config || getBriefConfig();
+  activeReviewState = { review, quotaEstimate, regionCode: config.regionCode };
 
   elements.analysisOutputs.forEach(output => {
     output.hidden = false;
@@ -194,15 +173,15 @@ function renderReview(review) {
     button.disabled = false;
   });
 
-  elements.metricVideos.textContent = formatNumber(review.videos.length);
-  elements.metricChannels.textContent = formatNumber(review.channels.length);
-  elements.metricQuota.textContent = formatNumber(categorySummaries.length);
-  elements.metricEndpoint.textContent = "Live ready";
-  elements.categoryLabel.textContent = "Offering Insights live view";
-  elements.briefMode.textContent = "Live API metadata";
-  renderBriefResult(review, categorySummaries, quotaEstimate, config);
-  renderVideoSources(review, categorySummaries);
-  updateMindmap(review, categorySummaries, config);
+  elements.metricSelection.textContent = "User-selected";
+  elements.metricData.textContent = "Public only";
+  elements.metricSearch.textContent = "Not used";
+  elements.metricEndpoint.textContent = "Read only";
+  elements.categoryLabel.textContent = "YouTube-provided labels";
+  elements.briefMode.textContent = "Fresh public metadata";
+  renderBriefResult(review, config);
+  renderVideoSources(review);
+  updateMindmap(review, config);
 
   elements.sourceTable.innerHTML = review.videos.map(video => `
     <tr>
@@ -219,20 +198,19 @@ function renderReview(review) {
     </tr>
   `).join("");
 
-  elements.videoTable.innerHTML = categorySummaries.map(summary => `
+  elements.videoTable.innerHTML = review.videos.map(video => `
     <tr>
       <td>
-        <strong>${escapeHtml(summary.categoryName)}</strong>
-        <div class="muted-line">${formatNumber(summary.count)} selected video${summary.count === 1 ? "" : "s"}</div>
+        <strong>${escapeHtml(video.title)}</strong>
+        <div class="muted-line">${escapeHtml(video.id || "unknown video")} - ${formatDate(video.publishedAt)}</div>
       </td>
       <td>
-        ${escapeHtml(summary.firstVideo.title)}
-        <div class="muted-line">${escapeHtml(summary.firstVideo.channelTitle)} - ${formatDate(summary.firstVideo.publishedAt)}</div>
+        <strong>${escapeHtml(video.categoryName)}</strong>
+        <div class="muted-line">Category ID ${escapeHtml(video.categoryId || "unknown")} returned for this video</div>
       </td>
       <td>
-        <span class="signal">${formatNumber(summary.count)} selected source${summary.count === 1 ? "" : "s"}</span>
-        <span class="signal">${formatNumber(summary.channelCount)} channel${summary.channelCount === 1 ? "" : "s"}</span>
-        <span class="signal">category label mapped</span>
+        <strong>${escapeHtml(video.channelTitle)}</strong>
+        <div class="muted-line"><a href="${escapeHtml(youtubeWatchUrl(video.id))}" target="_blank" rel="noopener">Open this source on YouTube</a></div>
       </td>
     </tr>
   `).join("");
@@ -268,22 +246,35 @@ function renderReview(review) {
     </li>
   `).join("");
 
-  elements.reportOutput.textContent = buildReport(review, categorySummaries, quotaEstimate, config);
+  elements.reportOutput.textContent = buildReport(review, quotaEstimate, config);
+}
+
+function refreshUserAuthoredOutputs() {
+  if (!activeReviewState) return;
+  const config = {
+    ...getBriefConfig(),
+    regionCode: activeReviewState.regionCode
+  };
+  renderBriefResult(activeReviewState.review, config);
+  elements.reportOutput.textContent = buildReport(
+    activeReviewState.review,
+    activeReviewState.quotaEstimate,
+    config
+  );
 }
 
 function youtubeWatchUrl(videoId) {
   return videoId ? `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}` : "https://www.youtube.com/";
 }
 
-function renderVideoSources(review, categorySummaries) {
+function renderVideoSources(review) {
   const videos = review.videos || [];
-  const primaryCategory = categorySummaries[0]?.categoryName || "selected source set";
-  const featured = categorySummaries[0]?.firstVideo || videos[0];
+  const featured = videos[0];
 
   if (!videos.length || !featured?.id) {
     elements.featuredVideo.innerHTML = `
-      <strong>Analyze videos to load a featured YouTube source.</strong>
-      <p>Offering Insights shows public videos as cited sources for the generated planning brief.</p>
+      <strong>Retrieve metadata to load a featured YouTube source.</strong>
+      <p>Offering Insights shows public videos as cited sources for the user-authored planning note.</p>
     `;
     elements.videoGallery.innerHTML = `
       <article>
@@ -295,19 +286,20 @@ function renderVideoSources(review, categorySummaries) {
   }
 
   elements.featuredVideo.innerHTML = `
-    <a class="featured-thumb" href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener" aria-label="Open first selected YouTube source in ${escapeHtml(primaryCategory)}">
+    <a class="featured-thumb" href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener" aria-label="Open first selected YouTube source">
       <img src="${escapeHtml(featured.thumbnailUrl || `https://i.ytimg.com/vi/${featured.id}/hqdefault.jpg`)}" alt="YouTube thumbnail for ${escapeHtml(featured.title)}">
       <span>Open YouTube source</span>
     </a>
     <div>
-      <span>First selected source in ${escapeHtml(primaryCategory)}</span>
+      <span>First selected source</span>
       <strong>${escapeHtml(featured.title)}</strong>
       <p>${escapeHtml(featured.channelTitle)} - ${formatNumber(featured.viewCount)} public views - ${formatDate(featured.publishedAt)}</p>
       <a href="${escapeHtml(youtubeWatchUrl(featured.id))}" target="_blank" rel="noopener">Open source on YouTube</a>
     </div>
   `;
 
-  elements.videoGallery.innerHTML = videos.map(video => `
+  const remainingVideos = videos.slice(1);
+  elements.videoGallery.innerHTML = remainingVideos.length ? remainingVideos.map(video => `
     <article>
       <a class="video-thumb" href="${escapeHtml(youtubeWatchUrl(video.id))}" target="_blank" rel="noopener" aria-label="Open ${escapeHtml(video.title)} on YouTube">
         <img src="${escapeHtml(video.thumbnailUrl || `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`)}" alt="YouTube thumbnail for ${escapeHtml(video.title)}">
@@ -318,7 +310,12 @@ function renderVideoSources(review, categorySummaries) {
         <p>${escapeHtml(video.channelTitle)} - ${formatNumber(video.viewCount)} views</p>
       </div>
     </article>
-  `).join("");
+  `).join("") : `
+    <article>
+      <strong>One selected source</strong>
+      <p>The featured source above is the complete selected source set for this lookup.</p>
+    </article>
+  `;
 }
 
 const mindmapState = {
@@ -374,19 +371,17 @@ async function ensureMindmap() {
   }
 }
 
-function updateMindmap(review, categorySummaries, config) {
-  mindmapState.data = { review, categorySummaries, config };
-  const videoLabel = review.videos.length === 1 ? "video" : "videos";
-  const categoryLabel = categorySummaries.length === 1 ? "category" : "categories";
+function updateMindmap(review, config) {
+  mindmapState.data = { review, config };
   renderBrainstormDetail({
     type: "brief",
     label: config.title,
-    detail: `${review.videos.length} selected public ${videoLabel} across ${categorySummaries.length} ${categoryLabel}.`
+    detail: "Review each selected video independently, then write your own planning note."
   });
 
   ensureMindmap().then(() => {
     if (mindmapState.initialized) {
-      buildMindmapScene(review, categorySummaries, config);
+      buildMindmapScene(review, config);
     }
   });
 }
@@ -420,7 +415,7 @@ function clearMindmapGroup() {
   mindmapState.nodes = [];
 }
 
-function buildMindmapScene(review, categorySummaries, config) {
+function buildMindmapScene(review, config) {
   const THREE = mindmapState.THREE;
   if (!THREE || !mindmapState.group) return;
 
@@ -441,69 +436,68 @@ function buildMindmapScene(review, categorySummaries, config) {
     scale: 1.25
   });
 
-  const categoryRadius = 5.5;
-  const videoRadius = 3.1;
-  const channelRadius = 7.6;
-  const visibleCategorySummaries = categorySummaries.slice(0, 6);
-  const totalCategories = Math.max(visibleCategorySummaries.length, 1);
+  const visibleVideos = review.videos.slice(0, 6);
+  const totalVideos = Math.max(visibleVideos.length, 1);
+  const channelById = new Map(review.channels.map(channel => [channel.id, channel]));
 
-  visibleCategorySummaries.forEach((summary, index) => {
-    const angle = (index / totalCategories) * Math.PI * 2 - Math.PI / 2;
+  visibleVideos.forEach((video, index) => {
+    const angle = (index / totalVideos) * Math.PI * 2 - Math.PI / 2;
+    const videoPosition = new THREE.Vector3(
+      Math.cos(angle) * 4.4,
+      Math.sin(angle) * 4.4,
+      Math.sin(angle * 1.4) * 0.8
+    );
+    const videoNode = addMindmapNode({
+      label: truncateLabel(video.title, 24),
+      detail: `${video.channelTitle} - ${formatNumber(video.viewCount)} public views`,
+      type: "video",
+      position: videoPosition,
+      color: palette.video,
+      scale: 0.72,
+      video
+    });
+    addMindmapLink(center.position, videoNode.position, 0xd3b16a);
+
+    const categoryAngle = angle - 0.13;
     const categoryPosition = new THREE.Vector3(
-      Math.cos(angle) * categoryRadius,
-      Math.sin(angle) * categoryRadius,
-      Math.sin(angle * 1.7) * 1.2
+      Math.cos(categoryAngle) * 7.4,
+      Math.sin(categoryAngle) * 7.4,
+      1.1
     );
     const categoryNode = addMindmapNode({
-      label: summary.categoryName,
-      detail: `${summary.count} selected source${summary.count === 1 ? "" : "s"} in this category`,
+      label: truncateLabel(video.categoryName, 20),
+      detail: `YouTube category label returned for "${video.title}".`,
       type: "category",
       position: categoryPosition,
       color: palette.category,
-      scale: 0.95,
-      summary
+      scale: 0.6,
+      video
     });
-    addMindmapLink(center.position, categoryNode.position, 0x9eb4c7);
+    addMindmapLink(videoNode.position, categoryNode.position, 0x9eb4c7);
 
-    const visibleVideos = summary.videos.slice(0, 3);
-    visibleVideos.forEach((video, videoIndex) => {
-      const offset = (videoIndex - (visibleVideos.length - 1) / 2) * 1.12;
-      const videoAngle = angle + offset;
-      const videoPosition = new THREE.Vector3(
-        categoryPosition.x + Math.cos(videoAngle) * videoRadius,
-        categoryPosition.y + Math.sin(videoAngle) * videoRadius,
-        categoryPosition.z + 1.1
-      );
-      const videoNode = addMindmapNode({
-        label: truncateLabel(video.title, 24),
-        detail: `${video.channelTitle} - ${formatNumber(video.viewCount)} public views`,
-        type: "video",
-        position: videoPosition,
-        color: palette.video,
-        scale: 0.68,
-        video
-      });
-      addMindmapLink(categoryNode.position, videoNode.position, 0xd3b16a);
-    });
-  });
-
-  review.channels.slice(0, 6).forEach((channel, index) => {
-    const angle = (index / Math.max(review.channels.length, 1)) * Math.PI * 2 + Math.PI / 5;
+    const channel = channelById.get(video.channelId) || {
+      id: video.channelId,
+      title: video.channelTitle,
+      subscriberCount: 0,
+      videoCount: 0
+    };
+    const channelAngle = angle + 0.13;
     const channelPosition = new THREE.Vector3(
-      Math.cos(angle) * channelRadius,
-      Math.sin(angle) * channelRadius,
-      -1.6
+      Math.cos(channelAngle) * 7.4,
+      Math.sin(channelAngle) * 7.4,
+      -1.1
     );
     const channelNode = addMindmapNode({
       label: truncateLabel(channel.title, 20),
-      detail: `${formatNumber(channel.subscriberCount)} subscribers, ${formatNumber(channel.videoCount)} public videos`,
+      detail: `Public channel context returned for "${video.title}".`,
       type: "channel",
       position: channelPosition,
       color: palette.channel,
       scale: 0.62,
-      channel
+      channel,
+      video
     });
-    addMindmapLink(center.position, channelNode.position, 0xe0b0a3);
+    addMindmapLink(videoNode.position, channelNode.position, 0xe0b0a3);
   });
 }
 
@@ -512,7 +506,7 @@ function truncateLabel(value, maxLength) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}...` : text;
 }
 
-function addMindmapNode({ label, detail, type, position, color, scale, summary, video, channel }) {
+function addMindmapNode({ label, detail, type, position, color, scale, video, channel }) {
   const THREE = mindmapState.THREE;
   const geometry = new THREE.SphereGeometry(scale, 24, 16);
   const material = new THREE.MeshStandardMaterial({
@@ -524,13 +518,13 @@ function addMindmapNode({ label, detail, type, position, color, scale, summary, 
   });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.copy(position);
-  mesh.userData = { label, detail, type, summary, video, channel };
+  mesh.userData = { label, detail, type, video, channel };
   mindmapState.group.add(mesh);
   mindmapState.nodes.push(mesh);
 
   const labelSprite = makeLabelSprite(label, color, type);
   labelSprite.position.set(position.x, position.y - scale - 0.58, position.z);
-  labelSprite.userData = { label, detail, type, summary, video, channel };
+  labelSprite.userData = { label, detail, type, video, channel };
   mindmapState.group.add(labelSprite);
 
   return mesh;
@@ -616,34 +610,34 @@ function renderBrainstormDetail(data) {
 }
 
 function brainstormPromptsFor(data) {
-  if (data.type === "category" && data.summary) {
+  if (data.type === "category" && data.video) {
     return [
-      `Use ${data.summary.categoryName} as a candidate category lens for this selected source set.`,
-      `Compare ${formatNumber(data.summary.count)} selected source${data.summary.count === 1 ? "" : "s"} with the other returned categories.`,
-      "Keep the category summary limited to this selected source set, not a YouTube-wide trend."
+      `YouTube labels "${data.video.title}" as ${data.video.categoryName}.`,
+      "Open the original source before deciding whether this label is relevant to your review question.",
+      "Record your own observation in the planning note; the application does not infer one."
     ];
   }
 
   if (data.type === "video" && data.video) {
     return [
       `Use "${data.video.title}" as a cited public source in the evidence section.`,
-      `Check whether its category ${data.video.categoryName} supports the intended source angle.`,
-      `Open the YouTube source when the planner needs to inspect the original public video.`
+      `Review its YouTube-provided category label, ${data.video.categoryName}, without treating it as a recommendation.`,
+      "Open the original YouTube source before writing your own planning observation."
     ];
   }
 
   if (data.type === "channel" && data.channel) {
     return [
-      `Use ${data.channel.title} as channel context for source credibility.`,
-      `Compare subscriber count and public video count with the other returned channels.`,
-      `Keep the note limited to public channel metadata from channels.list.`
+      `Review ${data.channel.title} only as public channel context for the linked source.`,
+      "Do not treat subscriber or public-video counts as an Offering Insights score.",
+      "Keep your note limited to the public metadata shown and your own source review."
     ];
   }
 
   return [
-    "Define the decision question before running the video analysis.",
-    "Use category representation as one signal for a candidate angle.",
-    "Use the API trace to explain how the brief was built."
+    "Define the review question before running the metadata lookup.",
+    "Inspect each selected video as a separate cited source.",
+    "Write your own note and use the API trace to verify how the source register was retrieved."
   ];
 }
 
@@ -666,119 +660,95 @@ function animateMindmap() {
   mindmapState.renderer.render(mindmapState.scene, mindmapState.camera);
 }
 
-function renderBriefResult(review, categorySummaries, quotaEstimate, config) {
-  const primary = categorySummaries[0];
-  const categoryCount = categorySummaries.length;
-  const videoCount = review.videos.length;
-  const channelCount = review.channels.length;
-  const endpointCount = review.endpointLog.length;
-
-  if (!primary) {
+function renderBriefResult(review, config) {
+  if (!review.videos.length) {
     elements.briefResult.innerHTML = `
       <article>
-        <span>Most represented category</span>
-        <strong>Waiting for video analysis</strong>
-        <p>Analyze the selected videos to create a source-backed planning brief.</p>
+        <span>Review question</span>
+        <strong>Waiting for public metadata</strong>
+        <p>Retrieve the selected videos to display a source-by-source metadata register.</p>
       </article>
       <article>
         <span>Service output</span>
-        <strong>Planning brief with source evidence</strong>
-        <p>The brief is generated from public YouTube metadata and cited source cards.</p>
+        <strong>Source register with cited public metadata</strong>
+        <p>Each video remains separate. No category grouping, ranking, score, or recommendation is generated.</p>
       </article>
       <article>
         <span>Next action</span>
-        <strong>Export planning note</strong>
-        <p>Copy the generated report for editorial planning, source review, or research notes.</p>
+        <strong>Write your own planning note</strong>
+        <p>Use the cited source links, then export the note you entered.</p>
       </article>
     `;
     return;
   }
 
-  const channelNames = review.channels.slice(0, 3).map(channel => channel.title);
-  const playlistNote = review.playlistItems.length
-    ? `${review.playlistItems.length} public playlist item${review.playlistItems.length === 1 ? "" : "s"} included from user-provided playlist input.`
-    : "No public playlist URL was included in this source set.";
-  const outsidePrimaryCount = Math.max(videoCount - primary.count, 0);
-  const otherCategories = categorySummaries.slice(1).map(summary => summary.categoryName);
-  const nextActionTitle = outsidePrimaryCount
-    ? `Review ${formatNumber(outsidePrimaryCount)} source${outsidePrimaryCount === 1 ? "" : "s"} outside ${primary.categoryName}.`
-    : `Confirm that ${primary.categoryName} matches the intended brief.`;
-  const nextActionDetail = outsidePrimaryCount
-    ? `The remaining source${outsidePrimaryCount === 1 ? " uses" : "s use"} ${otherCategories.join(", ")}. Decide whether that mix supports the question before exporting the note.`
-    : `All selected sources use the same YouTube category label. Check the cited videos, then export the note for ${config.audience}.`;
+  const noteTitle = config.planningNote ? "User-authored note ready" : "No planning note entered yet";
+  const noteBody = config.planningNote || "Open the cited sources, then write your own observation in the Planning goal section.";
 
   elements.briefResult.innerHTML = `
     <article>
-      <span>Candidate angle</span>
-      <strong>${escapeHtml(primary.categoryName)} is most represented in this selected set.</strong>
-      <p>For ${escapeHtml(config.audience)}, use this as one source-set signal: ${formatNumber(primary.count)} of ${formatNumber(videoCount)} selected videos use this YouTube category label.</p>
+      <span>Review question</span>
+      <strong>${escapeHtml(config.question)}</strong>
+      <p>This question is entered by the user and is not inferred from YouTube API Data.</p>
     </article>
     <article>
-      <span>Evidence</span>
-      <strong>${formatNumber(categoryCount)} ${categoryCount === 1 ? "category" : "categories"} and ${formatNumber(channelCount)} public ${channelCount === 1 ? "channel" : "channels"} compared.</strong>
-      <p>Public channels returned: ${escapeHtml(channelNames.join(", ") || "No channel returned")}. ${escapeHtml(playlistNote)}</p>
+      <span>Source register</span>
+      <strong>Current public metadata is shown one source at a time.</strong>
+      <p>Offering Insights does not group categories, calculate representation, rank sources, or suggest an angle.</p>
     </article>
     <article>
-      <span>Next action</span>
-      <strong>${escapeHtml(nextActionTitle)}</strong>
-      <p>${escapeHtml(nextActionDetail)} The evidence cites ${formatNumber(endpointCount)} read-only API call${endpointCount === 1 ? "" : "s"}.</p>
+      <span>Your planning note</span>
+      <strong>${escapeHtml(noteTitle)}</strong>
+      <p>${escapeHtml(noteBody)}</p>
     </article>
   `;
 }
 
-function buildReport(review, categorySummaries, quotaEstimate, config) {
-  const mode = "Live YouTube Data API analysis";
-  const primary = categorySummaries[0];
-  const outsidePrimaryCount = primary ? Math.max(review.videos.length - primary.count, 0) : 0;
-  const categoryLines = categorySummaries.map(summary => (
-    `- ${summary.categoryName}: ${summary.count} selected source video(s), ${summary.channelCount} channel(s). First selected source in this category: "${summary.firstVideo.title}".`
-  ));
+function buildReport(review, quotaEstimate, config) {
+  const mode = "Fresh YouTube Data API public-metadata lookup";
   const endpointLines = review.endpointLog.map(item => (
     `- ${item.name}: ${item.detail || "read-only public metadata lookup"}`
+  ));
+  const sourceLines = review.videos.map(video => (
+    `- ${video.title} | category=${video.categoryName} (ID ${video.categoryId || "unknown"}) | channel=${video.channelTitle} | views=${formatNumber(video.viewCount)} | likes=${formatNumber(video.likeCount)} | published=${formatDate(video.publishedAt)} | source=${youtubeWatchUrl(video.id)}`
   ));
 
   return [
     config.title,
-    "Service outcome: Build a source-backed planning brief from selected public YouTube videos.",
+    "Document type: User-authored source review note with a cited public metadata register.",
     `Use case: ${config.audience}`,
-    `Decision question: ${config.question}`,
+    `Review question (user-provided): ${config.question}`,
+    "Planning note (user-provided):",
+    config.planningNote || "[No planning note entered]",
+    "",
     `Mode: ${mode}`,
     review.fetchedAt ? `Fetched at: ${formatTimestamp(new Date(review.fetchedAt))}` : "",
     `Category region: ${config.regionCode}`,
     "Data boundary: public YouTube metadata only; no OAuth, no private user data, no uploads, no comment moderation.",
-    "Interpretation boundary: category labels and public metadata come from YouTube; candidate angles and planning notes are Offering Insights outputs and are not provided or endorsed by YouTube.",
+    "Interpretation boundary: category labels and public metadata come from YouTube. Offering Insights does not aggregate categories, calculate representation, rank or score sources, identify trends, or generate recommendations.",
+    "Authorship boundary: the review question and planning note are entered by the user and are not generated from YouTube API Data.",
     "Prototype boundary: this tool does not watch videos, transcribe audio, analyze captions, analyze comments, or access private account data.",
     "Input method: public video IDs, video URLs, or public playlist URLs supplied by the user.",
-    `Videos reviewed: ${review.videos.length}`,
-    `Channels included: ${review.channels.length}`,
-    `Estimated quota units for this analysis: ${quotaEstimate}`,
+    `Estimated quota units for this request trace: ${quotaEstimate}`,
     "",
     "Endpoints demonstrated:",
     ...endpointLines,
     "",
-    "Category summary for this selected source set:",
-    ...categoryLines,
-    primary
-      ? `Category review action: ${outsidePrimaryCount ? `review ${outsidePrimaryCount} selected source(s) outside ${primary.categoryName}` : `confirm that ${primary.categoryName} matches the intended brief`} before export.`
-      : "",
-    "",
-    "Source evidence:",
-    ...review.videos.map(video => (
-      `- ${video.title} | category=${video.categoryName} | channel=${video.channelTitle} | views=${formatNumber(video.viewCount)} | published=${formatDate(video.publishedAt)}`
-    )),
+    "Source register (one entry per selected public video):",
+    ...sourceLines,
     "",
     "Visual workspace:",
-    "The page renders YouTube source cards from public thumbnails and links, then builds an optional Three.js evidence map from the same public metadata so a planner can inspect categories, source videos, and channel context before exporting the brief.",
+    "The page renders YouTube source cards from public thumbnails and links. Its optional Three.js map preserves one-to-one relationships from each video to its YouTube-provided category label and public channel context; it does not group, rank, or score sources.",
     "",
     "What this enables:",
-    "- Choose a candidate source angle for the selected video set.",
+    "- Review each selected public source independently.",
     "- Cite the original public YouTube source links and metadata.",
-    "- Copy or download the planning brief for a handoff.",
-    "- Explain how the brief was built using the read-only API trace.",
+    "- Copy or download the user's planning note with the source register.",
+    "- Explain how the metadata was retrieved using the read-only API trace.",
     "",
     "Planning use case:",
-    "The dashboard supports source review by turning a selected public source list into a planning brief, evidence table, API trace, and exportable note."
-  ].filter(line => line !== "").join("\n");
+    "The dashboard supports source review by displaying current public metadata for user-selected sources and pairing it with a planning note written by the user."
+  ].filter(line => line !== undefined && line !== null).join("\n");
 }
 
 function formatTimestamp(date) {
@@ -796,9 +766,9 @@ function formatTimestamp(date) {
 function scrollToDashboardSection(targetId, button) {
   const target = document.getElementById(targetId);
   if (!target) return;
-  target.scrollIntoView({ behavior: "smooth", block: "start" });
+  target.scrollIntoView({ behavior: "auto", block: "start" });
   setActiveNavByTarget(targetId, button);
-  window.setTimeout(updateActiveNav, 500);
+  window.setTimeout(updateActiveNav, 0);
 }
 
 function setActiveNavByTarget(targetId, fallbackButton) {
@@ -852,7 +822,7 @@ function downloadReport() {
   const blob = new Blob([elements.reportOutput.textContent], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  const filename = `${getBriefConfig().title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "offering-insights-brief"}.txt`;
+  const filename = `${getBriefConfig().title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "offering-insights-source-note"}.txt`;
   link.href = url;
   link.download = filename;
   document.body.append(link);
@@ -865,6 +835,9 @@ function downloadReport() {
 elements.runLive?.addEventListener("click", runLiveReview);
 elements.copyReport?.addEventListener("click", copyReport);
 elements.downloadReport?.addEventListener("click", downloadReport);
+[elements.briefTitle, elements.briefAudience, elements.decisionQuestion, elements.planningNote].forEach(field => {
+  field?.addEventListener("input", refreshUserAuthoredOutputs);
+});
 elements.navButtons.forEach(button => {
   button.addEventListener("click", () => scrollToDashboardSection(button.dataset.target, button));
 });
