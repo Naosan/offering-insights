@@ -34,6 +34,15 @@ Recommended recording flow:
 
 The public build intentionally has no fabricated YouTube sample results. Output is shown only after a live API request, so displayed YouTube titles, thumbnails, categories, channels, and statistics remain attributable to the current API response.
 
+## Data lifecycle
+
+- This API Client uses one Google Cloud API Project: `141682939002`.
+- Each analysis retrieves fresh Non-Authorized Data from read-only YouTube Data API list methods.
+- Selected source IDs and API responses are not persisted in an application database, server-side cache, or application log.
+- API responses use `Cache-Control: no-store`; browser results are replaced by the next analysis and clear when the page reloads or closes.
+- The in-memory abuse limiter stores an instance-specific HMAC address key for no more than 10 minutes.
+- Google Cloud standard request logs exclude request bodies and API responses and use the project's 30-day default retention.
+
 ## Local development
 
 Set `YOUTUBE_API_KEY` in the process environment, then run:

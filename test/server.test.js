@@ -120,3 +120,17 @@ test("reports service health without exposing configuration", async () => {
   assert.equal(response.status, 200);
   assert.deepEqual(payload, { ok: true });
 });
+
+test("publishes explicit API data handling and retention disclosures", async () => {
+  const baseUrl = await startServer({ apiKey: "test-key" });
+  const response = await fetch(`${baseUrl}/privacy.html`);
+  const policy = await response.text();
+
+  assert.equal(response.status, 200);
+  assert.match(policy, /exactly one Google Cloud API Project/i);
+  assert.match(policy, /141682939002/);
+  assert.match(policy, /Every analysis makes new read-only YouTube Data API requests/i);
+  assert.match(policy, /does not maintain an API Data database or cache/i);
+  assert.match(policy, /retained for 30 days/i);
+  assert.match(policy, /within 7 calendar days/i);
+});

@@ -6,7 +6,7 @@
     <title>Workspace - Offering Insights</title>
     <meta name="description" content="Offering Insights turns selected public YouTube videos into source-backed planning briefs and evidence maps.">
     <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="styles.css?v=20260713-managed-api-v3">
+  <link rel="stylesheet" href="styles.css?v=20260715-privacy-v2">
   </head>
   <body>
     <header class="site-header">
@@ -128,7 +128,7 @@
             </label>
             <div class="credential-boundary">
               <strong>Managed API connection</strong>
-              <span>Offering Insights sends only the selected public IDs and category region to its managed service. The service makes the approved read-only YouTube Data API requests; the project credential is never entered into or returned to this browser.</span>
+              <span>Offering Insights sends only the selected public IDs and category region to its managed service. The service makes fresh read-only YouTube Data API requests; the project credential is never entered into or returned to this browser. Inputs and API responses are not stored in an application database or server-side cache. See <a href="privacy.html#api-data-refresh">API Data handling</a>.</span>
             </div>
             <div class="action-row">
               <button class="button primary action-button" id="run-live" type="button">Analyze public videos</button>

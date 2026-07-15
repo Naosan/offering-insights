@@ -1,3 +1,4 @@
+import { createHmac, randomBytes } from "node:crypto";
 import { createServer as createHttpServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join } from "node:path";
@@ -165,26 +166,32 @@ function clientAddress(request) {
     .trim();
 }
 
-function createRateLimiter({ now = Date.now } = {}) {
+function createRateLimiter({
+  now = Date.now,
+  schedule = setTimeout,
+  cancel = clearTimeout,
+  keySecret = randomBytes(32)
+} = {}) {
   const buckets = new Map();
 
   return request => {
     const timestamp = now();
-    const address = clientAddress(request);
-    const recent = (buckets.get(address) || []).filter(value => timestamp - value < RATE_LIMIT_WINDOW_MS);
+    const addressKey = createHmac("sha256", keySecret)
+      .update(clientAddress(request))
+      .digest("hex");
+    const bucket = buckets.get(addressKey);
+    const recent = (bucket?.timestamps || []).filter(value => timestamp - value < RATE_LIMIT_WINDOW_MS);
 
     if (recent.length >= RATE_LIMIT_MAX_REQUESTS) {
       throw new HttpError(429, "Too many analysis requests. Please try again later.");
     }
 
     recent.push(timestamp);
-    buckets.set(address, recent);
+    if (bucket?.expiryTimer) cancel(bucket.expiryTimer);
 
-    if (buckets.size > 500) {
-      for (const [key, values] of buckets.entries()) {
-        if (!values.some(value => timestamp - value < RATE_LIMIT_WINDOW_MS)) buckets.delete(key);
-      }
-    }
+    const expiryTimer = schedule(() => buckets.delete(addressKey), RATE_LIMIT_WINDOW_MS);
+    expiryTimer?.unref?.();
+    buckets.set(addressKey, { timestamps: recent, expiryTimer });
   };
 }
 
