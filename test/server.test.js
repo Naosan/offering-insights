@@ -118,7 +118,7 @@ test("requires an approved browser origin and does not serve source files", asyn
   assert.equal(sourceResponse.status, 404);
 });
 
-test("publishes a source-by-source workflow without derived category conclusions", async () => {
+test("publishes a usable source research workflow without derived category conclusions", async () => {
   const baseUrl = await startServer({ apiKey: "test-key" });
   const [appResponse, scriptResponse] = await Promise.all([
     fetch(`${baseUrl}/app.html`),
@@ -130,9 +130,16 @@ test("publishes a source-by-source workflow without derived category conclusions
 
   assert.equal(appResponse.status, 200);
   assert.equal(scriptResponse.status, 200);
-  assert.match(publicClient, /does not aggregate/i);
+  assert.match(publicClient, /does not[^.]*aggregate category/i);
   assert.match(publicClient, /user-authored/i);
-  assert.match(app, /retrieve public metadata/i);
+  assert.match(app, /what are you researching/i);
+  assert.match(app, /load source details/i);
+  assert.match(app, /working conclusion/i);
+  assert.match(script, /data-source-note="takeaway"/i);
+  assert.match(script, /what to verify next/i);
+  assert.match(script, /sourceNoteState/);
+  assert.match(script, /JSON\.stringify\(\{ videoIds, playlistIds, regionCode: config\.regionCode \}\)/);
+  assert.doesNotMatch(publicClient, /youtube\.search\.list|search\.list/i);
   assert.doesNotMatch(publicClient, /summarizeByCategory/);
   assert.doesNotMatch(publicClient, /most represented/i);
   assert.doesNotMatch(publicClient, /choose a candidate source angle|is most represented/i);
@@ -159,6 +166,8 @@ test("publishes explicit API data handling and retention disclosures", async () 
   assert.match(policy, /141682939002/);
   assert.match(policy, /Every metadata lookup makes new read-only YouTube Data API requests/i);
   assert.match(policy, /does not maintain an API Data database or cache/i);
+  assert.match(policy, /per-source key takeaways and follow-up checks/i);
+  assert.match(policy, /not sent to the managed service, Google, or YouTube/i);
   assert.match(policy, /retained for 30 days/i);
   assert.match(policy, /within 7 calendar days/i);
 });

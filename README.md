@@ -1,6 +1,6 @@
 # Offering Insights
 
-Offering Insights is a public video source review workspace that displays current public metadata for user-selected YouTube videos and pairs it with a planning note written by the user. It provides source cards, a source-by-source metadata register, an API trace, and a Three.js map of one-to-one video/category/channel relationships. It does not aggregate categories, rank or score sources, identify trends, or generate recommendations from YouTube API Data.
+Offering Insights is a public video research workspace that displays current public metadata for user-selected YouTube videos and pairs each source with notes written by the user. It provides a research setup, source URL recognition, source cards, per-source takeaways and follow-up checks, a working conclusion, an API trace, and a Three.js map of one-to-one video/category/channel relationships. It does not aggregate categories, rank or score sources, identify trends, or generate recommendations from YouTube API Data.
 
 Pages:
 
@@ -21,17 +21,19 @@ The site intentionally does not publish the applicant's home address.
 
 ## Live metadata recording workflow
 
-Use `app.html` to show the service workflow from selected videos to an exported user-authored source review note.
+Use `app.html` to show the service workflow from selected videos to an exported user-authored research note.
 
 Recommended recording flow:
 
 1. Open the deployed Offering Insights workspace.
-2. Set the note name, use case, category region, review question, and an optional user-authored planning note.
-3. Paste selected public video IDs, video URLs, or public playlist URLs into the public user input.
-4. Click `Retrieve public metadata`. The browser sends only parsed public IDs and the category region to the managed endpoint; the API credential remains in server-side secret configuration.
-5. Show the source review result, quoted YouTube source cards, one-to-one Three.js source map, source evidence table, category label for each source, channel context, optional public playlist context, API trace, exportable note, and download action.
-6. State that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
-7. State that Offering Insights does not aggregate category data or generate a ranking, score, trend, candidate angle, or recommendation; the review question and planning note are entered by the user.
+2. Set a research title, research type, topic, and question.
+3. Paste selected public video IDs, video URLs, or public playlist URLs. Confirm that the source chips identify the intended inputs.
+4. Accept the Privacy Policy and Terms, then click `Load source details`. The browser sends only parsed public IDs and the category region to the managed endpoint; the API credential remains in server-side secret configuration.
+5. Open each cited YouTube source and write a key takeaway and follow-up check beside its current public metadata.
+6. Write a working conclusion, use the optional one-to-one source map, and inspect the folded channel, playlist, and API trace details when needed.
+7. Copy or download the research note with its cited source links and user-authored fields.
+8. State that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
+9. State that Offering Insights does not aggregate category data or generate a ranking, score, trend, candidate angle, or recommendation; the research topic, question, source notes, follow-up checks, and conclusion are entered by the user.
 
 The public build intentionally has no fabricated YouTube sample results. Output is shown only after a live API request, so displayed YouTube titles, thumbnails, categories, channels, and statistics remain attributable to the current API response.
 
@@ -53,6 +55,8 @@ npm start
 ```
 
 Open `http://localhost:8080/`. Run `npm test` for the server boundary tests.
+
+`YOUTUBE_API_KEY` must accept server-side requests. A key restricted to HTTP browser referrers returns `403` because the managed Node.js service does not issue a browser referrer. Keep the key in server configuration and restrict its API scope to YouTube Data API v3. The public deployment reads its working credential from managed secret configuration.
 
 ## GitHub Pages publishing notes
 
