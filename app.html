@@ -6,7 +6,7 @@
     <title>Workspace - Offering Insights</title>
     <meta name="description" content="Offering Insights helps users review selected public YouTube sources and write their own source-backed research notes.">
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="styles.css?v=20260717-research-workspace-v1">
+    <link rel="stylesheet" href="styles.css?v=20260717-project-files-v1">
   </head>
   <body>
     <header class="site-header">
@@ -43,7 +43,20 @@
           </div>
           <div class="status-strip" aria-label="Note storage status">
             <span>Your notes</span>
-            <strong>Stay in this browser tab</strong>
+            <strong>No automatic storage</strong>
+          </div>
+        </div>
+
+        <div class="project-toolbar" aria-label="Local project file">
+          <div class="project-toolbar-copy">
+            <strong>Local project file</strong>
+            <span>Source IDs and your writing only</span>
+          </div>
+          <div class="project-toolbar-actions">
+            <button class="button secondary project-file-button" id="open-project-button" type="button">Open project</button>
+            <input class="visually-hidden" id="open-project" type="file" accept=".json,application/json">
+            <button class="button secondary" id="save-project" type="button">Save project</button>
+            <span class="project-file-status" id="project-file-status" role="status" aria-live="polite">No project file saved automatically.</span>
           </div>
         </div>
 
@@ -56,7 +69,7 @@
             <div class="setup-grid research-setup-grid">
               <label class="field">
                 <span>Research title</span>
-                <input id="brief-title" type="text" spellcheck="true" placeholder="Example: Beginner AI learning sources">
+                <input id="brief-title" type="text" maxlength="160" spellcheck="true" placeholder="Example: Beginner AI learning sources">
               </label>
               <label class="field">
                 <span>Research type</span>
@@ -69,11 +82,11 @@
               </label>
               <label class="field wide">
                 <span>What are you researching?</span>
-                <input id="research-topic" type="text" spellcheck="true" placeholder="Describe the topic, audience, or project in one sentence">
+                <input id="research-topic" type="text" maxlength="500" spellcheck="true" placeholder="Describe the topic, audience, or project in one sentence">
               </label>
               <label class="field wide">
                 <span>What do you want to learn or verify?</span>
-                <input id="decision-question" type="text" spellcheck="true" placeholder="Example: Which sources explain the topic clearly enough to cite?">
+                <input id="decision-question" type="text" maxlength="500" spellcheck="true" placeholder="Example: Which sources explain the topic clearly enough to cite?">
               </label>
             </div>
             <details class="advanced-settings">
@@ -125,7 +138,7 @@
             </label>
             <details class="data-boundary">
               <summary>Data &amp; API details</summary>
-              <p>Only selected public IDs and the category region are sent to the managed service. Notes remain in this browser tab. The service uses fresh read-only YouTube Data API requests, does not expose the project credential, and does not maintain an API Data database or server-side cache. See <a href="privacy.html#api-data-refresh">API Data handling</a>.</p>
+              <p>Only selected public IDs and the category region are sent to the managed service. Notes remain in this browser tab unless you save a local project file. Project files exclude returned YouTube API Data. The service uses fresh read-only YouTube Data API requests, does not expose the project credential, and does not maintain an API Data database or server-side cache. See <a href="privacy.html#api-data-refresh">API Data handling</a>.</p>
             </details>
             <div class="action-row">
               <button class="button primary action-button" id="run-live" type="button" disabled>Load source details</button>
@@ -161,7 +174,7 @@
             <div class="control-body">
               <label class="field wide">
                 <span>Your research note</span>
-                <textarea id="planning-note" rows="6" spellcheck="true" placeholder="Summarize what you learned after reviewing the original sources."></textarea>
+                <textarea id="planning-note" rows="6" maxlength="3000" spellcheck="true" placeholder="Summarize what you learned after reviewing the original sources."></textarea>
                 <small>This conclusion and the source notes above are written by you and are not sent to YouTube.</small>
               </label>
             </div>
@@ -241,6 +254,6 @@
       <span><a href="privacy.html">Privacy</a></span>
     </footer>
 
-  <script src="script.js?v=20260717-research-workspace-v1"></script>
+  <script src="script.js?v=20260717-project-files-v1"></script>
   </body>
 </html>

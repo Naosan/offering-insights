@@ -135,6 +135,8 @@ test("publishes a usable source research workflow without derived category concl
   assert.match(app, /what are you researching/i);
   assert.match(app, /load source details/i);
   assert.match(app, /working conclusion/i);
+  assert.match(app, /id="open-project"/i);
+  assert.match(app, /id="save-project"/i);
   assert.match(script, /data-source-note="takeaway"/i);
   assert.match(script, /what to verify next/i);
   assert.match(script, /sourceNoteState/);
@@ -145,6 +147,26 @@ test("publishes a usable source research workflow without derived category concl
   assert.doesNotMatch(publicClient, /choose a candidate source angle|is most represented/i);
   assert.doesNotMatch(publicClient, /category representation/i);
   assert.doesNotMatch(app, /analyze public videos|public video analysis/i);
+});
+
+test("keeps resumable project files local and excludes returned YouTube API data", async () => {
+  const baseUrl = await startServer({ apiKey: "test-key" });
+  const [scriptResponse, policyResponse] = await Promise.all([
+    fetch(`${baseUrl}/script.js`),
+    fetch(`${baseUrl}/privacy.html`)
+  ]);
+  const script = await scriptResponse.text();
+  const policy = await policyResponse.text();
+
+  assert.match(script, /PROJECT_SCHEMA = "offering-insights-project"/);
+  assert.match(script, /research:\s*\{/);
+  assert.match(script, /sources:\s*\{/);
+  assert.match(script, /notes\s*$/m);
+  assert.match(script, /YouTube API Data was not included/i);
+  assert.match(script, /termsConsent\.checked = false/);
+  assert.match(script, /Current YouTube details have not been loaded/i);
+  assert.match(policy, /does not contain YouTube API Data such as titles, thumbnails, category labels, channel details, statistics, or an API response/i);
+  assert.match(policy, /Project files are read in the browser, are not uploaded/i);
 });
 
 test("reports service health without exposing configuration", async () => {
@@ -168,6 +190,7 @@ test("publishes explicit API data handling and retention disclosures", async () 
   assert.match(policy, /does not maintain an API Data database or cache/i);
   assert.match(policy, /per-source key takeaways and follow-up checks/i);
   assert.match(policy, /not sent to the managed service, Google, or YouTube/i);
+  assert.match(policy, /Opening a local project file does not make an API request/i);
   assert.match(policy, /retained for 30 days/i);
   assert.match(policy, /within 7 calendar days/i);
 });

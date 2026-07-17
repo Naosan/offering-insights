@@ -52,13 +52,13 @@
               <th scope="row">Selected-source input</th>
               <td data-label="Accessed or collected">Public YouTube video IDs, public playlist IDs parsed from URLs supplied by the user, and the selected category region (JP, US, or GB).</td>
               <td data-label="Use and sharing">The browser sends only these parsed IDs and the region to the Offering Insights managed service. The service sends them to YouTube Data API Services as read-only request parameters to retrieve public metadata.</td>
-              <td data-label="Storage and deletion">Not written to an application database, server-side cache, or application log. The input exists only while the live request is processed and is not retained by the application after the response completes.</td>
+              <td data-label="Storage and deletion">Not written to an application database, server-side cache, or application log. The input exists in page memory and while the live request is processed. A local project file contains these selected IDs only when the user explicitly downloads that file to their own device.</td>
             </tr>
             <tr>
               <th scope="row">Research-note input</th>
               <td data-label="Accessed or collected">The research title, research type, topic, research question, per-source key takeaways and follow-up checks, and working conclusion entered in the workspace.</td>
               <td data-label="Use and sharing">Used only by browser code to organize and format the user-authored research note. These fields are not sent to the managed service, Google, or YouTube.</td>
-              <td data-label="Storage and deletion">Held only in the current page state and removed from application state when the page is reloaded or closed. A copy persists only when the user chooses to copy or download it locally.</td>
+              <td data-label="Storage and deletion">Held only in the current page state and removed from application state when the page is reloaded or closed. A copy persists only when the user chooses to copy a report, download a report, or save a local project file on their own device.</td>
             </tr>
             <tr>
               <th scope="row">Public YouTube API Data</th>
@@ -93,8 +93,10 @@
         <li>Running another lookup replaces the prior result in the current page with newly retrieved API Data.</li>
         <li>Reloading or closing the page removes the live result from Offering Insights application state.</li>
         <li>The managed service does not persist API Data after completing the request and does not maintain an API Data database or cache.</li>
+        <li>A local project file contains selected video and playlist IDs, research settings, and user-authored notes only. It does not contain YouTube API Data such as titles, thumbnails, category labels, channel details, statistics, or an API response.</li>
+        <li>Opening a local project file does not make an API request. The user must accept the Privacy Policy and Terms and select "Load source details" before Offering Insights retrieves current public metadata again.</li>
         <li>Because Offering Insights does not retain API Data, it does not keep Non-Authorized Data for 30 days. If persistent API Data storage is introduced later, this policy and user consent flow will be updated before that use begins, and stored data will be refreshed or deleted no later than the period required by the YouTube API Services Developer Policies.</li>
-        <li>A report copied or downloaded at the user's direction is stored only in the user's clipboard or device. The user controls and deletes that local copy.</li>
+        <li>A report or project file created at the user's direction is stored only in the user's clipboard or device. The user controls and deletes that local copy.</li>
       </ul>
 
       <h2>Service providers and data sharing</h2>
@@ -111,7 +113,7 @@
 
       <h2>Cookies and information on the user's device</h2>
       <p>
-        Offering Insights application code does not set advertising or analytics cookies and does not use <code>localStorage</code> or <code>sessionStorage</code> for metadata request inputs, API Data, or user-authored research notes. Live results and notes remain in page memory. A file or clipboard copy is created only after the user selects the corresponding export action.
+        Offering Insights application code does not set advertising or analytics cookies and does not use <code>localStorage</code> or <code>sessionStorage</code> for metadata request inputs, API Data, or user-authored research notes. Live results and notes remain in page memory. A report, project file, or clipboard copy is created only after the user selects the corresponding local action. Project files are read in the browser, are not uploaded to Offering Insights, Google, or YouTube, and do not restore previously returned YouTube API Data.
       </p>
 
       <h2>Security</h2>
@@ -121,7 +123,7 @@
 
       <h2>Deletion requests and user choices</h2>
       <p>
-        To request deletion of personal information controlled by Offering Insights, email <a href="mailto:offeringinsights.contact@gmail.com?subject=Data%20deletion%20request">offeringinsights.contact@gmail.com</a> with the subject "Data deletion request." We will respond and delete identifiable personal information under our control as soon as possible and within 7 calendar days, unless retention is legally required. Offering Insights does not maintain user accounts or a persistent API Data store, so live source inputs and API results normally clear automatically as described above.
+        To request deletion of personal information controlled by Offering Insights, email <a href="mailto:offeringinsights.contact@gmail.com?subject=Data%20deletion%20request">offeringinsights.contact@gmail.com</a> with the subject "Data deletion request." We will respond and delete identifiable personal information under our control as soon as possible and within 7 calendar days, unless retention is legally required. Offering Insights does not maintain user accounts or a persistent API Data store, so live source inputs and API results normally clear automatically as described above. Local reports and project files remain under the user's control and can be deleted directly from the user's device.
       </p>
       <p>
         Deleting information held by Offering Insights does not delete data held by YouTube. A person who wants to delete or change information on YouTube must use YouTube or an authorized API Client that supports that action.

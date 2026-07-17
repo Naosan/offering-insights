@@ -2,6 +2,11 @@ const MANAGED_SERVICE_ORIGIN = "https://offering-insights-141682939002.asia-nort
 const ANALYZE_API_URL = window.location.hostname === "naosan.github.io"
   ? `${MANAGED_SERVICE_ORIGIN}/api/analyze`
   : "/api/analyze";
+const PROJECT_SCHEMA = "offering-insights-project";
+const PROJECT_VERSION = 1;
+const MAX_PROJECT_FILE_BYTES = 256 * 1024;
+const VALID_RESEARCH_TYPES = new Set(["source review", "editorial planning", "learning research", "content curation"]);
+const VALID_REGION_CODES = new Set(["JP", "US", "GB"]);
 
 const elements = {
   briefTitle: document.getElementById("brief-title"),
@@ -32,6 +37,10 @@ const elements = {
   copyReport: document.getElementById("copy-report"),
   downloadReport: document.getElementById("download-report"),
   copyStatus: document.getElementById("copy-status"),
+  openProject: document.getElementById("open-project"),
+  openProjectButton: document.getElementById("open-project-button"),
+  saveProject: document.getElementById("save-project"),
+  projectFileStatus: document.getElementById("project-file-status"),
   navButtons: document.querySelectorAll(".nav-button[data-target]"),
   analysisOutputs: document.querySelectorAll(".analysis-output"),
   analysisNavButtons: document.querySelectorAll(".nav-button[data-requires-analysis]")
@@ -182,6 +191,8 @@ function removeSource(kind, id) {
 }
 
 let requestInFlight = false;
+let requestSequence = 0;
+let openedProjectFilename = "";
 
 function setSourceInputStatus() {
   if (requestInFlight) return;
@@ -211,6 +222,7 @@ async function runLiveReview() {
   }
 
   requestInFlight = true;
+  const requestId = ++requestSequence;
   renderSourceSelection();
   setStatus("Loading current public details for the selected sources...", "neutral");
 
@@ -221,6 +233,7 @@ async function runLiveReview() {
       body: JSON.stringify({ videoIds, playlistIds, regionCode: config.regionCode })
     });
     const payload = await response.json().catch(() => ({}));
+    if (requestId !== requestSequence) return;
     if (!response.ok) {
       throw new Error(payload.error || `Metadata service returned HTTP ${response.status}.`);
     }
@@ -228,28 +241,41 @@ async function runLiveReview() {
     renderReview({
       source: "live",
       config,
-      ...payload
+      ...payload,
+      requestedSources: {
+        videoIds: [...videoIds],
+        playlistIds: [...playlistIds]
+      }
     });
     const exclusionNote = payload.excludedVideoCount
       ? ` ${formatNumber(payload.excludedVideoCount)} non-public source${payload.excludedVideoCount === 1 ? " was" : "s were"} excluded.`
       : "";
     setStatus(`Source details loaded at ${formatTimestamp(new Date())}.${exclusionNote}`, "success");
+    if (openedProjectFilename) {
+      setProjectFileStatus(`Opened ${openedProjectFilename}. Current YouTube details are loaded.`, "success");
+    }
   } catch (error) {
-    setStatus(error.message, "error");
+    if (requestId === requestSequence) {
+      setStatus(error.message, "error");
+    }
   } finally {
-    requestInFlight = false;
-    renderSourceSelection();
+    if (requestId === requestSequence) {
+      requestInFlight = false;
+      renderSourceSelection();
+    }
   }
 }
 
 let activeReviewState = null;
 let sourceNoteState = new Map();
+let retainedImportedNoteIds = new Set();
 
 function reconcileSourceNotes(videos) {
-  sourceNoteState = new Map(videos.map(video => [
-    video.id,
-    sourceNoteState.get(video.id) || { takeaway: "", verifyNext: "" }
-  ]));
+  videos.forEach(video => {
+    if (!sourceNoteState.has(video.id)) {
+      sourceNoteState.set(video.id, { takeaway: "", verifyNext: "" });
+    }
+  });
 }
 
 function renderReview(review) {
@@ -259,7 +285,12 @@ function renderReview(review) {
   review.endpointLog = review.endpointLog || [];
   const quotaEstimate = review.endpointLog.reduce((total, item) => total + (item.cost || 0), 0);
   const config = review.config || getBriefConfig();
-  activeReviewState = { review, quotaEstimate, regionCode: config.regionCode };
+  activeReviewState = {
+    review,
+    quotaEstimate,
+    regionCode: config.regionCode,
+    sourceSelection: review.requestedSources || getSourceSelection()
+  };
   reconcileSourceNotes(review.videos);
 
   elements.analysisOutputs.forEach(output => {
@@ -848,6 +879,241 @@ function queueActiveNavUpdate() {
   });
 }
 
+function setProjectFileStatus(message, tone = "neutral") {
+  if (!elements.projectFileStatus) return;
+  elements.projectFileStatus.textContent = message;
+  elements.projectFileStatus.dataset.tone = tone;
+}
+
+function assertExactKeys(value, expectedKeys, label) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error(`${label} must be an object.`);
+  }
+  const actualKeys = Object.keys(value).sort();
+  const expected = [...expectedKeys].sort();
+  if (actualKeys.length !== expected.length || actualKeys.some((key, index) => key !== expected[index])) {
+    throw new Error(`${label} does not match the Offering Insights project format.`);
+  }
+}
+
+function readProjectString(value, label, maxLength) {
+  if (typeof value !== "string") {
+    throw new Error(`${label} must be text.`);
+  }
+  if (value.length > maxLength) {
+    throw new Error(`${label} is longer than ${maxLength} characters.`);
+  }
+  return value;
+}
+
+function readProjectIds(value, label, limit, pattern) {
+  if (!Array.isArray(value) || value.length > limit) {
+    throw new Error(`${label} must contain no more than ${limit} IDs.`);
+  }
+  if (value.some(id => typeof id !== "string" || !pattern.test(id))) {
+    throw new Error(`${label} contains an invalid ID.`);
+  }
+  if (new Set(value).size !== value.length) {
+    throw new Error(`${label} contains a duplicate ID.`);
+  }
+  return value;
+}
+
+function parseProjectDocument(rawText) {
+  if (new TextEncoder().encode(rawText).length > MAX_PROJECT_FILE_BYTES) {
+    throw new Error("The project file is larger than 256 KB.");
+  }
+
+  let documentValue;
+  try {
+    documentValue = JSON.parse(rawText);
+  } catch {
+    throw new Error("The selected file is not valid JSON.");
+  }
+
+  assertExactKeys(documentValue, ["schema", "version", "savedAt", "research", "sources", "notes"], "Project file");
+  if (documentValue.schema !== PROJECT_SCHEMA || documentValue.version !== PROJECT_VERSION) {
+    throw new Error("This project file version is not supported.");
+  }
+  readProjectString(documentValue.savedAt, "Saved date", 40);
+
+  assertExactKeys(documentValue.research, ["title", "type", "topic", "question", "categoryRegion", "workingConclusion"], "Research settings");
+  const research = {
+    title: readProjectString(documentValue.research.title, "Research title", 160),
+    type: readProjectString(documentValue.research.type, "Research type", 40),
+    topic: readProjectString(documentValue.research.topic, "Research topic", 500),
+    question: readProjectString(documentValue.research.question, "Research question", 500),
+    categoryRegion: readProjectString(documentValue.research.categoryRegion, "Category region", 2),
+    workingConclusion: readProjectString(documentValue.research.workingConclusion, "Working conclusion", 3000)
+  };
+  if (!VALID_RESEARCH_TYPES.has(research.type) || !VALID_REGION_CODES.has(research.categoryRegion)) {
+    throw new Error("The project contains an unsupported research type or category region.");
+  }
+
+  assertExactKeys(documentValue.sources, ["videoIds", "playlistIds"], "Source settings");
+  const sources = {
+    videoIds: readProjectIds(documentValue.sources.videoIds, "Video sources", 20, /^[A-Za-z0-9_-]{11}$/),
+    playlistIds: readProjectIds(documentValue.sources.playlistIds, "Playlist sources", 3, /^[A-Za-z0-9_-]{10,120}$/)
+  };
+
+  if (!Array.isArray(documentValue.notes) || documentValue.notes.length > 100) {
+    throw new Error("Source notes must contain no more than 100 entries.");
+  }
+  const notes = documentValue.notes.map((note, index) => {
+    assertExactKeys(note, ["videoId", "keyTakeaway", "verifyNext"], `Source note ${index + 1}`);
+    const videoId = readProjectString(note.videoId, `Source note ${index + 1} video ID`, 11);
+    if (!/^[A-Za-z0-9_-]{11}$/.test(videoId)) {
+      throw new Error(`Source note ${index + 1} contains an invalid video ID.`);
+    }
+    return {
+      videoId,
+      keyTakeaway: readProjectString(note.keyTakeaway, `Source note ${index + 1} key takeaway`, 800),
+      verifyNext: readProjectString(note.verifyNext, `Source note ${index + 1} follow-up`, 800)
+    };
+  });
+  if (new Set(notes.map(note => note.videoId)).size !== notes.length) {
+    throw new Error("Source notes contain a duplicate video ID.");
+  }
+
+  return { research, sources, notes };
+}
+
+function getProjectNoteIds() {
+  const selection = activeReviewState?.sourceSelection || getSourceSelection();
+  return [...new Set([
+    ...selection.videoIds,
+    ...(activeReviewState?.review.videos || []).map(video => video.id),
+    ...retainedImportedNoteIds
+  ])];
+}
+
+function buildProjectDocument() {
+  const selection = activeReviewState?.sourceSelection || getSourceSelection();
+  const noteIds = getProjectNoteIds();
+  const notes = noteIds.flatMap(videoId => {
+    const note = sourceNoteState.get(videoId);
+    if (!note || (!note.takeaway.trim() && !note.verifyNext.trim())) return [];
+    return [{
+      videoId,
+      keyTakeaway: note.takeaway,
+      verifyNext: note.verifyNext
+    }];
+  });
+
+  return {
+    schema: PROJECT_SCHEMA,
+    version: PROJECT_VERSION,
+    savedAt: new Date().toISOString(),
+    research: {
+      title: elements.briefTitle?.value || "",
+      type: elements.briefAudience?.value || "source review",
+      topic: elements.researchTopic?.value || "",
+      question: elements.decisionQuestion?.value || "",
+      categoryRegion: elements.regionCode?.value || "JP",
+      workingConclusion: elements.planningNote?.value || ""
+    },
+    sources: {
+      videoIds: selection.videoIds,
+      playlistIds: selection.playlistIds
+    },
+    notes
+  };
+}
+
+function projectFilename() {
+  const title = (elements.briefTitle?.value || "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  return `${title || "offering-insights-project"}.offering-insights.json`;
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function saveProject() {
+  const projectText = `${JSON.stringify(buildProjectDocument(), null, 2)}\n`;
+  const blob = new Blob([projectText], { type: "application/json;charset=utf-8" });
+  if (blob.size > MAX_PROJECT_FILE_BYTES) {
+    setProjectFileStatus("Project is too large to save. Shorten the source notes.", "error");
+    return;
+  }
+  triggerDownload(blob, projectFilename());
+  setProjectFileStatus("Project saved locally. YouTube API Data was not included.", "success");
+}
+
+function resetReviewForProjectOpen() {
+  requestSequence += 1;
+  requestInFlight = false;
+  activeReviewState = null;
+  elements.analysisOutputs.forEach(output => {
+    output.hidden = true;
+  });
+  elements.analysisNavButtons.forEach(button => {
+    button.disabled = true;
+  });
+  elements.reportOutput.textContent = "Load source details, review each source, and write your conclusion.";
+  elements.copyStatus.textContent = "";
+  if (mindmapState.group) clearMindmapGroup();
+  mindmapState.data = null;
+  mindmapState.selected = null;
+  setActiveNavByTarget("research-setup-title");
+}
+
+function applyProjectDocument(project, filename) {
+  elements.briefTitle.value = project.research.title;
+  elements.briefAudience.value = project.research.type;
+  elements.researchTopic.value = project.research.topic;
+  elements.decisionQuestion.value = project.research.question;
+  elements.regionCode.value = project.research.categoryRegion;
+  elements.planningNote.value = project.research.workingConclusion;
+  setCanonicalSourceSelection(project.sources.videoIds, project.sources.playlistIds);
+
+  sourceNoteState = new Map(project.notes.map(note => [
+    note.videoId,
+    { takeaway: note.keyTakeaway, verifyNext: note.verifyNext }
+  ]));
+  retainedImportedNoteIds = new Set(project.notes.map(note => note.videoId));
+  openedProjectFilename = filename;
+  if (elements.termsConsent) elements.termsConsent.checked = false;
+  resetReviewForProjectOpen();
+
+  const sourceCount = project.sources.videoIds.length + project.sources.playlistIds.length;
+  setStatus(
+    sourceCount
+      ? `Project opened with ${sourceCount} selected source${sourceCount === 1 ? "" : "s"}. Accept the terms, then load current source details.`
+      : "Project opened without a source selection. Add a public YouTube source to continue.",
+    "neutral"
+  );
+  setProjectFileStatus(`Opened ${filename}. Current YouTube details have not been loaded.`, "success");
+}
+
+async function openProjectFile(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  try {
+    if (file.size > MAX_PROJECT_FILE_BYTES) {
+      throw new Error("The project file is larger than 256 KB.");
+    }
+    const project = parseProjectDocument(await file.text());
+    applyProjectDocument(project, file.name);
+  } catch (error) {
+    setProjectFileStatus(error.message, "error");
+  } finally {
+    event.target.value = "";
+  }
+}
+
 async function copyReport() {
   try {
     await navigator.clipboard.writeText(elements.reportOutput.textContent);
@@ -859,26 +1125,24 @@ async function copyReport() {
 
 function downloadReport() {
   const blob = new Blob([elements.reportOutput.textContent], { type: "text/plain;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
   const filename = `${getBriefConfig().title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "offering-insights-source-note"}.txt`;
-  link.href = url;
-  link.download = filename;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  triggerDownload(blob, filename);
   elements.copyStatus.textContent = "Download ready.";
 }
 
 elements.runLive?.addEventListener("click", runLiveReview);
 elements.copyReport?.addEventListener("click", copyReport);
 elements.downloadReport?.addEventListener("click", downloadReport);
+elements.saveProject?.addEventListener("click", saveProject);
+elements.openProjectButton?.addEventListener("click", () => elements.openProject?.click());
+elements.openProject?.addEventListener("change", openProjectFile);
 elements.videoIds?.addEventListener("input", () => {
+  retainedImportedNoteIds.clear();
   renderSourceSelection();
   setSourceInputStatus();
 });
 elements.clearSources?.addEventListener("click", () => {
+  retainedImportedNoteIds.clear();
   elements.videoIds.value = "";
   renderSourceSelection();
   setStatus("Source input cleared. Any loaded research note remains available below.", "neutral");
@@ -887,6 +1151,7 @@ elements.clearSources?.addEventListener("click", () => {
 elements.sourceChipList?.addEventListener("click", event => {
   const button = event.target.closest("button[data-remove-source]");
   if (!button) return;
+  retainedImportedNoteIds.clear();
   removeSource(button.dataset.removeSource, button.dataset.sourceId);
 });
 elements.sourceNotesList?.addEventListener("input", event => {

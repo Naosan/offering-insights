@@ -1,6 +1,6 @@
 # Offering Insights
 
-Offering Insights is a public video research workspace that displays current public metadata for user-selected YouTube videos and pairs each source with notes written by the user. It provides a research setup, source URL recognition, source cards, per-source takeaways and follow-up checks, a working conclusion, an API trace, and a Three.js map of one-to-one video/category/channel relationships. It does not aggregate categories, rank or score sources, identify trends, or generate recommendations from YouTube API Data.
+Offering Insights is a public video research workspace that displays current public metadata for user-selected YouTube videos and pairs each source with notes written by the user. It provides a research setup, source URL recognition, source cards, per-source takeaways and follow-up checks, a working conclusion, local project save/reopen, an API trace, and a Three.js map of one-to-one video/category/channel relationships. It does not aggregate categories, rank or score sources, identify trends, or generate recommendations from YouTube API Data.
 
 Pages:
 
@@ -32,8 +32,9 @@ Recommended recording flow:
 5. Open each cited YouTube source and write a key takeaway and follow-up check beside its current public metadata.
 6. Write a working conclusion, use the optional one-to-one source map, and inspect the folded channel, playlist, and API trace details when needed.
 7. Copy or download the research note with its cited source links and user-authored fields.
-8. State that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
-9. State that Offering Insights does not aggregate category data or generate a ranking, score, trend, candidate angle, or recommendation; the research topic, question, source notes, follow-up checks, and conclusion are entered by the user.
+8. Optionally save the project JSON, reopen it, and show that research settings, selected IDs, and user notes return without restoring YouTube metadata. Accept the terms and run `Load source details` to retrieve current metadata again.
+9. State that the workflow uses selected public metadata only, with no OAuth, uploads, private user data, `search.list`, or `videos.insert`.
+10. State that Offering Insights does not aggregate category data or generate a ranking, score, trend, candidate angle, or recommendation; the research topic, question, source notes, follow-up checks, and conclusion are entered by the user.
 
 The public build intentionally has no fabricated YouTube sample results. Output is shown only after a live API request, so displayed YouTube titles, thumbnails, categories, channels, and statistics remain attributable to the current API response.
 
@@ -43,6 +44,8 @@ The public build intentionally has no fabricated YouTube sample results. Output 
 - Each metadata lookup retrieves fresh Non-Authorized Data from read-only YouTube Data API list methods.
 - Selected source IDs and API responses are not persisted in an application database, server-side cache, or application log.
 - API responses use `Cache-Control: no-store`; browser results are replaced by the next lookup and clear when the page reloads or closes.
+- A user-initiated local project file contains selected source IDs, research settings, and user-authored notes only. It excludes YouTube titles, thumbnails, categories, channels, statistics, endpoint traces, and API responses.
+- Project files are opened locally in the browser and are not uploaded. Opening a project resets consent and requires a fresh metadata lookup before API Data is displayed.
 - The in-memory abuse limiter stores an instance-specific HMAC address key for no more than 10 minutes.
 - Google Cloud standard request logs exclude request bodies and API responses and use the project's 30-day default retention.
 

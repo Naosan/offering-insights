@@ -531,6 +531,70 @@ h3 {
   text-transform: uppercase;
 }
 
+.project-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 22px 0;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.project-toolbar-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 210px;
+}
+
+.project-toolbar-copy span,
+.project-file-status {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.project-toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.project-file-button {
+  cursor: pointer;
+}
+
+.project-file-status {
+  flex-basis: 100%;
+  min-height: 18px;
+  text-align: right;
+}
+
+.project-file-status[data-tone="success"] {
+  color: var(--green);
+  font-weight: 700;
+}
+
+.project-file-status[data-tone="error"] {
+  color: #7a2818;
+  font-weight: 700;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .toolbar {
   justify-content: flex-start;
   margin: 24px 0;
@@ -1921,5 +1985,22 @@ td {
 
   .status-strip {
     min-width: 0;
+  }
+
+  .project-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .project-toolbar-actions {
+    justify-content: flex-start;
+  }
+
+  .project-toolbar-actions .button {
+    flex: 1 1 150px;
+  }
+
+  .project-file-status {
+    text-align: left;
   }
 }
